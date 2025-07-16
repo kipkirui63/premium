@@ -184,16 +184,6 @@ const MarketplaceContent = () => {
             onSignInClick={() => setIsLoginModalOpen(true)}
           />
           
-          {/* Add a prominent "View Subscription Plans" button */}
-          <div className="mb-6 text-center">
-            <button
-              onClick={() => setIsPricingModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-            >
-              View Subscription Plans
-            </button>
-          </div>
-          
           <AppsGrid
             apps={filteredApps}
             userRatings={userRatings}
