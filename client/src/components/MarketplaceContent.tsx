@@ -133,9 +133,21 @@ const MarketplaceContent = () => {
     return;
   }
 
-  // Show pricing modal first before adding to cart
-  setIsPricingModalOpen(true);
-  toast.info('Please select a subscription plan to continue');
+  // Check if user has selected a plan
+  if (!selectedPlan) {
+    toast.info('Please select a subscription plan first');
+    return;
+  }
+
+  setCartItems(prev => {
+    const exists = prev.find(cartItem => cartItem.id === item.id);
+    if (exists) {
+      toast.info(`${item.name} is already in the cart.`);
+      return prev;
+    }
+    toast.success(`${item.name} added to cart successfully!`);
+    return [...prev, item];
+  });
 };
 
 
@@ -159,8 +171,8 @@ const MarketplaceContent = () => {
   const handlePlanSelect = (plan: 'monthly' | 'yearly', price: number) => {
     setSelectedPlan({ type: plan, price });
     setIsPricingModalOpen(false);
-    // After selecting a plan, redirect to checkout with the selected plan
-    toast.success(`${plan.charAt(0).toUpperCase() + plan.slice(1)} plan selected - $${price}`);
+    // After selecting a plan, users can now add items to cart
+    toast.success(`${plan.charAt(0).toUpperCase() + plan.slice(1)} plan selected - $${price}. You can now add items to your cart!`);
   };
 
   return (
@@ -177,6 +189,11 @@ const MarketplaceContent = () => {
             onCartClick={() => setIsCartOpen(true)}
             onSignInClick={() => setIsLoginModalOpen(true)}
           />
+          
+          {/* Pricing Plans Section */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <PricingPlans onSelectPlan={handlePlanSelect} />
+          </div>
           
           <AppsGrid
             apps={filteredApps}

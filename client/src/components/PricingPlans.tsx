@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '../contexts/AuthContext';
-import { createCheckoutSession } from '../services/checkoutService';
-import { useToast } from '@/hooks/use-toast';
 
 interface PricingPlansProps {
   onSelectPlan: (plan: 'monthly' | 'yearly', price: number) => void;
@@ -12,56 +9,16 @@ interface PricingPlansProps {
 
 const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const { user, checkTokenExpiry } = useAuth();
-  const { toast } = useToast();
 
   const monthlyPrice = 19.99;
   const yearlyPrice = 199.99; // $16.66/month when billed annually
   const yearlySavings = (monthlyPrice * 12) - yearlyPrice;
   const yearlySavingsPercentage = Math.round((yearlySavings / (monthlyPrice * 12)) * 100);
 
-  const handlePlanSelect = async (plan: 'monthly' | 'yearly') => {
+  const handlePlanSelect = (plan: 'monthly' | 'yearly') => {
     setSelectedPlan(plan);
     const price = plan === 'monthly' ? monthlyPrice : yearlyPrice;
-    
-    // Check authentication and token expiry
-    const token = localStorage.getItem('access_token');
-    if (!user || !token || !checkTokenExpiry()) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to proceed with checkout.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsProcessing(true);
-    
-    try {
-      // Create checkout session with the plan type
-      const toolName = plan === 'monthly' ? 'CrispAI Monthly' : 'CrispAI Yearly';
-      const checkoutUrl = await createCheckoutSession(token, toolName);
-      
-      // Open Stripe checkout in a new tab
-      window.open(checkoutUrl, '_blank');
-      
-      toast({
-        title: "Redirecting to Checkout",
-        description: `Opening checkout for ${plan} plan - $${price}`,
-      });
-      
-      onSelectPlan(plan, price);
-    } catch (error) {
-      console.error('Checkout error:', error);
-      toast({
-        title: "Checkout Error",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+    onSelectPlan(plan, price);
   };
 
   return (
@@ -135,9 +92,8 @@ const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
             className={`w-full ${selectedPlan === 'monthly' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
             variant={selectedPlan === 'monthly' ? 'default' : 'outline'}
             onClick={() => handlePlanSelect('monthly')}
-            disabled={isProcessing}
           >
-            {isProcessing && selectedPlan === 'monthly' ? 'Processing...' : selectedPlan === 'monthly' ? 'Selected' : 'Select Monthly'}
+            {selectedPlan === 'monthly' ? 'Selected' : 'Select Monthly'}
           </Button>
         </div>
 
@@ -190,9 +146,8 @@ const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
             className={`w-full ${selectedPlan === 'yearly' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
             variant={selectedPlan === 'yearly' ? 'default' : 'outline'}
             onClick={() => handlePlanSelect('yearly')}
-            disabled={isProcessing}
           >
-            {isProcessing && selectedPlan === 'yearly' ? 'Processing...' : selectedPlan === 'yearly' ? 'Selected' : 'Select Yearly'}
+            {selectedPlan === 'yearly' ? 'Selected' : 'Select Yearly'}
           </Button>
         </div>
       </div>
