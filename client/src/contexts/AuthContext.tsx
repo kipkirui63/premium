@@ -25,6 +25,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   verifyEmail: (uid: string, token: string) => Promise<boolean>;
+  checkTokenExpiry: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,9 +87,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data.detail.includes('not verified') ||
           data.detail.includes('verify your email') ||
           data.detail.includes('account not activated') ||
-          data.detail.includes('activation required')
+          data.detail.includes('activation required') ||
+          data.detail.includes('email verification')
         )) {
-          throw new Error('Please activate your email before logging in. Check your inbox for the activation link.');
+          throw new Error('Please verify your email first. Check your inbox for the activation link.');
         }
         throw new Error(data.detail || 'Login failed');
       }
@@ -191,6 +193,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('refresh_token');
   };
 
+  const checkTokenExpiry = (): boolean => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return false;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp > currentTime;
+    } catch (error) {
+      return false;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -201,6 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         error,
         verifyEmail,
+        checkTokenExpiry,
       }}
     >
       {children}

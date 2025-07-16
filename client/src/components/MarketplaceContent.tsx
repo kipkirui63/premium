@@ -5,6 +5,8 @@ import AppsGrid from './marketplace/AppsGrid';
 import CartSidebar from './CartSidebar';
 import LoginModal from './auth/LoginModal';
 import SubscriptionWarning from './SubscriptionWarning';
+import PricingPlans from './PricingPlans';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 
 
@@ -29,7 +31,10 @@ const MarketplaceContent = () => {
   const [cartItems, setCartItems] = useState<App[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [userRatings, setUserRatings] = useState<{ [key: number]: number }>({});
+  const [selectedPlan, setSelectedPlan] = useState<{type: 'monthly' | 'yearly', price: number} | null>(null);
+  const { user } = useAuth();
 
   const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
 
@@ -121,6 +126,13 @@ const MarketplaceContent = () => {
       });
 
  const addToCart = (item: App) => {
+  // Check if user is logged in
+  if (!user) {
+    setIsLoginModalOpen(true);
+    toast.info('Please log in to add items to your cart');
+    return;
+  }
+
   setCartItems(prev => {
     const exists = prev.find(cartItem => cartItem.id === item.id);
     if (exists) {
@@ -148,6 +160,13 @@ const MarketplaceContent = () => {
       ...prev,
       [appId]: rating
     }));
+  };
+
+  const handlePlanSelect = (plan: 'monthly' | 'yearly', price: number) => {
+    setSelectedPlan({ type: plan, price });
+    setIsPricingModalOpen(false);
+    // Here you would typically redirect to checkout with the selected plan
+    toast.success(`${plan.charAt(0).toUpperCase() + plan.slice(1)} plan selected - $${price}`);
   };
 
   return (
@@ -180,12 +199,32 @@ const MarketplaceContent = () => {
         cartItems={cartItems}
         onRemoveItem={removeFromCart}
         onClearCart={clearCart}
+        onOpenPricingModal={() => setIsPricingModalOpen(true)}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
       />
 
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+
+      {/* Pricing Modal */}
+      {isPricingModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Choose Your Subscription Plan</h2>
+              <button
+                onClick={() => setIsPricingModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+            <PricingPlans onSelectPlan={handlePlanSelect} />
+          </div>
+        </div>
+      )}
     </>
   );
 };

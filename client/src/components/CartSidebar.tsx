@@ -20,11 +20,13 @@ interface CartSidebarProps {
   cartItems: App[];
   onRemoveItem: (id: number) => void;
   onClearCart: () => void;
+  onOpenPricingModal?: () => void;
+  onOpenLoginModal?: () => void;
 }
 
-const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: CartSidebarProps) => {
+const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, onOpenPricingModal, onOpenLoginModal }: CartSidebarProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-   const { user } = useAuth();
+   const { user, checkTokenExpiry } = useAuth();
     const token = localStorage.getItem('access_token');
   const { hasPurchased, checkSubscription } = useSubscription();
   const { toast } = useToast();
@@ -38,6 +40,18 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
         description: "Please sign in to proceed with checkout.",
         variant: "destructive",
       });
+      onOpenLoginModal?.();
+      return;
+    }
+
+    // Check if token is expired
+    if (!checkTokenExpiry()) {
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired. Please sign in again.",
+        variant: "destructive",
+      });
+      onOpenLoginModal?.();
       return;
     }
 
@@ -65,7 +79,11 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
     setIsProcessing(true);
 
     try {
-      // Use the first available item for checkout
+      // Show pricing modal instead of direct checkout
+      onClose();
+      onOpenPricingModal?.();
+      
+      /* // Use the first available item for checkout
       const firstItem = availableItems[0];
       
       console.log('Creating checkout session for:', firstItem.name);
@@ -81,7 +99,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
       onClearCart();
       
       // Close cart sidebar
-      onClose();
+      onClose(); */
       
       // Monitor the checkout window and refresh subscription when it closes
       const checkWindowClosed = setInterval(async () => {

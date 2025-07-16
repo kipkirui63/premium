@@ -122,7 +122,31 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
 ## Changelog
 
 - July 05, 2025. Initial setup
+- July 16, 2025. Added monthly/yearly subscription plans, login-required cart functionality, token expiry handling, and email verification notifications
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes (July 16, 2025)
+
+### Authentication & Security Improvements
+- **Login-required cart**: Users must log in before adding items to cart
+- **Token expiry handling**: Automatic detection of expired sessions with re-login prompt
+- **Email verification notifications**: Clear messages when login fails due to unverified email
+
+### Subscription Plans
+- **Monthly/Yearly pricing**: Added pricing modal with monthly ($19.99) and yearly ($199.99) plans
+- **Savings display**: Shows 17% savings on yearly plans with visual indicators
+- **Integrated checkout**: Direct integration with Django backend for Stripe payments
+
+### User Experience
+- **Cart checkout flow**: Redirects to pricing modal instead of direct checkout
+- **Session management**: Proper handling of expired tokens during checkout
+- **Error handling**: Comprehensive error messages for authentication issues
+
+### Technical Architecture
+- **PricingPlans component**: New component for subscription plan selection
+- **Enhanced AuthContext**: Added checkTokenExpiry function for token validation
+- **CartSidebar updates**: Integrated with new pricing modal and login flows
+- **Backend integration**: Maintained existing Django API endpoints for payments
