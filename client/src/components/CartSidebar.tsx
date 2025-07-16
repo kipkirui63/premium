@@ -83,66 +83,17 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
       onClose();
       onOpenPricingModal?.();
       
-      /* // Use the first available item for checkout
-      const firstItem = availableItems[0];
-      
-      console.log('Creating checkout session for:', firstItem.name);
-      
-      const checkoutUrl = await createCheckoutSession(token, firstItem.name);
-      
-      console.log('Checkout URL received:', checkoutUrl);
-      
-      // Open Stripe checkout in a new tab
-      const checkoutWindow = window.open(checkoutUrl, '_blank');
-      
-      // Clear cart immediately after opening checkout
-      onClearCart();
-      
-      // Close cart sidebar
-      onClose(); */
-      
-      // Monitor the checkout window and refresh subscription when it closes
-      const checkWindowClosed = setInterval(async () => {
-        if (checkoutWindow && checkoutWindow.closed) {
-          clearInterval(checkWindowClosed);
-          console.log('Checkout window closed, checking subscription status...');
-          
-          // Multiple subscription checks for reliability
-          await checkSubscription();
-          setTimeout(async () => {
-            console.log('🔄 Second subscription check after window close');
-            await checkSubscription();
-          }, 2000);
-          setTimeout(async () => {
-            console.log('🔄 Final subscription check after window close');
-            await checkSubscription();
-          }, 5000);
-        }
-      }, 1000);
-      
       toast({
-        title: "Redirecting to Checkout",
-        description: `Opening checkout for ${firstItem.name} in a new tab...`,
+        title: "Choose Your Plan",
+        description: "Select between monthly and yearly subscription plans",
       });
       
     } catch (error) {
       console.error('Checkout error details:', error);
       
-      let errorMessage = 'An unexpected error occurred during checkout.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
-          errorMessage = 'Payment service is currently unavailable. Please try again later.';
-        } else if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
       toast({
-        title: "Checkout Error",
-        description: errorMessage,
+        title: "Error",
+        description: "Failed to open pricing plans. Please try again.",
         variant: "destructive",
       });
     } finally {
