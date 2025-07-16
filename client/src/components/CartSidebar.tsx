@@ -9,7 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 interface App {
   id: number;
   name: string;
-  price: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
   icon: string;
   isComingSoon?: boolean;
 }
@@ -22,9 +23,10 @@ interface CartSidebarProps {
   onClearCart: () => void;
   onOpenPricingModal?: () => void;
   onOpenLoginModal?: () => void;
+  selectedPlan?: {type: 'monthly' | 'yearly', price: number} | null;
 }
 
-const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, onOpenPricingModal, onOpenLoginModal }: CartSidebarProps) => {
+const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, onOpenPricingModal, onOpenLoginModal, selectedPlan }: CartSidebarProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
    const { user, checkTokenExpiry } = useAuth();
     const token = localStorage.getItem('access_token');
@@ -126,7 +128,10 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
 
   // Filter out already purchased apps from total calculation
   const availableForPurchase = cartItems.filter(item => !item.isComingSoon && !hasPurchased(item.name));
-  const total = availableForPurchase.reduce((sum, item) => sum + parseFloat(item.price.replace('$', '')), 0);
+  const total = availableForPurchase.reduce((sum, item) => {
+    const price = selectedPlan?.type === 'yearly' ? item.yearlyPrice : item.monthlyPrice;
+    return sum + price;
+  }, 0);
 
   if (!isOpen) return null;
 
@@ -169,7 +174,11 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
                     <img src={item.icon} alt={item.name} className="w-12 h-12 rounded object-cover" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm truncate">{item.name}</h3>
-                      <p className="text-blue-600 font-semibold">{item.price}</p>
+                      <p className="text-blue-600 font-semibold">
+                        {selectedPlan?.type === 'yearly' 
+                          ? `$${item.yearlyPrice}/year` 
+                          : `$${item.monthlyPrice}/month`}
+                      </p>
                       {item.isComingSoon && (
                         <p className="text-gray-500 text-xs">Coming Soon</p>
                       )}

@@ -7,7 +7,8 @@ interface App {
   id: number;
   name: string;
   description: string;
-  price: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
   freeTrialDays: string;
   rating: number;
   reviewCount: number;
@@ -24,13 +25,25 @@ interface AppCardProps {
   userRating: number;
   onAddToCart: (app: App) => void;
   onRate: (appId: number, rating: number) => void;
+  selectedPlan: 'monthly' | 'yearly';
 }
 
-const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
+const AppCard = ({ app, userRating, onAddToCart, onRate, selectedPlan }: AppCardProps) => {
   const { user } = useAuth();
   const { hasPurchased, isLoading, checkSubscription } = useSubscription();
   
   const hasAccessToApp = hasPurchased(app.name);
+  
+  // Calculate dynamic price based on selected plan
+  const displayPrice = selectedPlan === 'yearly' ? app.yearlyPrice : app.monthlyPrice;
+  const priceText = selectedPlan === 'yearly' ? 
+    `$${app.yearlyPrice}/year` : 
+    `$${app.monthlyPrice}/month`;
+  
+  const saveAmount = selectedPlan === 'yearly' ? 
+    (app.monthlyPrice * 12) - app.yearlyPrice : 0;
+  const savePercentage = selectedPlan === 'yearly' ? 
+    Math.round((saveAmount / (app.monthlyPrice * 12)) * 100) : 0;
   
   const renderStars = (interactive: boolean = false) => {
   const stars = [];
@@ -196,7 +209,12 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
             {app.agentUrl && !app.isComingSoon && hasAccessToApp && <ExternalLink className="w-4 h-4" />}
           </h3>
           <div className="text-right">
-            <div className="text-2xl font-bold text-blue-600">{app.price}</div>
+            <div className="text-2xl font-bold text-blue-600">{priceText}</div>
+            {selectedPlan === 'yearly' && saveAmount > 0 && (
+              <div className="text-xs text-green-600 font-medium">
+                Save {savePercentage}% (${saveAmount.toFixed(0)})
+              </div>
+            )}
             <div className="text-sm text-green-600">{app.freeTrialDays}</div>
           </div>
         </div>

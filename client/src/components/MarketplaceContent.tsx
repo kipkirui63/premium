@@ -14,7 +14,8 @@ interface App {
   id: number;
   name: string;
   description: string;
-  price: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
   freeTrialDays: string;
   rating: number;
   reviewCount: number;
@@ -38,13 +39,14 @@ const MarketplaceContent = () => {
 
   const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
 
-  // Updated apps data with correct URLs and CrispWrite reviews set to 0
+  // Updated apps data with individual monthly/yearly pricing
   const allApps: App[] = [
     {
       id: 1,
       name: 'Business Intelligence Agent',
       description: 'Advanced AI-powered analytics platform that transforms your data into actionable insights with real-time dashboards and predictive modeling.',
-      price: '$19.99',
+      monthlyPrice: 19.99,
+      yearlyPrice: 199.99,
       freeTrialDays: '7-day free trial',
       rating: 4.6,
       reviewCount: 176,
@@ -58,7 +60,8 @@ const MarketplaceContent = () => {
       id: 2,
       name: 'AI Recruitment Assistant',
       description: 'Streamline your hiring process with AI-powered candidate screening, interview scheduling, and talent matching algorithms.',
-      price: '$19.99',
+      monthlyPrice: 24.99,
+      yearlyPrice: 249.99,
       freeTrialDays: '7-day free trial',
       rating: 4,
       reviewCount: 146,
@@ -72,7 +75,8 @@ const MarketplaceContent = () => {
       id: 3,
       name: 'CrispWrite',
       description: 'Professional writing assistant that helps create compelling content, from emails to reports, with AI-powered grammar and style suggestions.',
-      price: '$89.99',
+      monthlyPrice: 89.99,
+      yearlyPrice: 899.99,
       freeTrialDays: '7-day free trial',
       rating: 5,
       reviewCount: 170,
@@ -81,13 +85,13 @@ const MarketplaceContent = () => {
       icon: '/lovable-uploads/d66f2274-4cd1-4479-83ff-ae819baf5942.png',
       backgroundGradient: 'bg-gradient-to-br from-orange-400 to-red-500',
       agentUrl:"https://crispwrite.crispai.ca/"
-      
     },
     {
       id: 4,
       name: 'SOP Assistant',
       description: 'Create, manage, and optimize Standard Operating Procedures with intelligent templates and collaborative editing features.',
-      price: '$19.99',
+      monthlyPrice: 15.99,
+      yearlyPrice: 159.99,
       freeTrialDays: '7-day free trial',
       rating: 4.5,
       reviewCount: 145,
@@ -101,7 +105,8 @@ const MarketplaceContent = () => {
       id: 5,
       name: 'Resume Analyzer',
       description: 'Advanced resume screening tool that evaluates candidates against job requirements with detailed scoring and recommendations.',
-      price: '$19.99',
+      monthlyPrice: 12.99,
+      yearlyPrice: 129.99,
       freeTrialDays: '7-day free trial',
       rating: 120,
       reviewCount: 180,
@@ -200,6 +205,7 @@ const MarketplaceContent = () => {
             userRatings={userRatings}
             onAddToCart={addToCart}
             onRate={handleRate}
+            selectedPlan={selectedPlan?.type || 'monthly'}
           />
         </div>
       </div>
@@ -212,6 +218,7 @@ const MarketplaceContent = () => {
         onClearCart={clearCart}
         onOpenPricingModal={() => setIsPricingModalOpen(true)}
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        selectedPlan={selectedPlan}
       />
 
       <LoginModal
