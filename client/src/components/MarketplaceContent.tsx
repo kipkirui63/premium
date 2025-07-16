@@ -133,15 +133,9 @@ const MarketplaceContent = () => {
     return;
   }
 
-  setCartItems(prev => {
-    const exists = prev.find(cartItem => cartItem.id === item.id);
-    if (exists) {
-      toast.info(`${item.name} is already in the cart.`);
-      return prev;
-    }
-    toast.success(`${item.name} added to cart successfully!`);
-    return [...prev, item];
-  });
+  // Show pricing modal first before adding to cart
+  setIsPricingModalOpen(true);
+  toast.info('Please select a subscription plan to continue');
 };
 
 
@@ -165,7 +159,7 @@ const MarketplaceContent = () => {
   const handlePlanSelect = (plan: 'monthly' | 'yearly', price: number) => {
     setSelectedPlan({ type: plan, price });
     setIsPricingModalOpen(false);
-    // Here you would typically redirect to checkout with the selected plan
+    // After selecting a plan, redirect to checkout with the selected plan
     toast.success(`${plan.charAt(0).toUpperCase() + plan.slice(1)} plan selected - $${price}`);
   };
 
