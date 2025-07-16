@@ -21,12 +21,10 @@ interface CartSidebarProps {
   cartItems: App[];
   onRemoveItem: (id: number) => void;
   onClearCart: () => void;
-  onOpenPricingModal?: () => void;
   onOpenLoginModal?: () => void;
-  selectedPlan?: {type: 'monthly' | 'yearly', price: number} | null;
 }
 
-const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, onOpenPricingModal, onOpenLoginModal, selectedPlan }: CartSidebarProps) => {
+const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, onOpenLoginModal }: CartSidebarProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
    const { user, checkTokenExpiry } = useAuth();
     const token = localStorage.getItem('access_token');
@@ -128,10 +126,8 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
 
   // Filter out already purchased apps from total calculation
   const availableForPurchase = cartItems.filter(item => !item.isComingSoon && !hasPurchased(item.name));
-  const total = availableForPurchase.reduce((sum, item) => {
-    const price = selectedPlan?.type === 'yearly' ? item.yearlyPrice : item.monthlyPrice;
-    return sum + price;
-  }, 0);
+  // Since each card has its own pricing now, we'll show a message that total depends on individual selections
+  const hasItemsForPurchase = availableForPurchase.length > 0;
 
   if (!isOpen) return null;
 
@@ -174,10 +170,8 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
                     <img src={item.icon} alt={item.name} className="w-12 h-12 rounded object-cover" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm truncate">{item.name}</h3>
-                      <p className="text-blue-600 font-semibold">
-                        {selectedPlan?.type === 'yearly' 
-                          ? `$${item.yearlyPrice}/year` 
-                          : `$${item.monthlyPrice}/month`}
+                      <p className="text-gray-600 text-xs">
+                        From ${item.monthlyPrice}/month
                       </p>
                       {item.isComingSoon && (
                         <p className="text-gray-500 text-xs">Coming Soon</p>
@@ -201,9 +195,8 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
           {/* Footer */}
           {cartItems.length > 0 && (
             <div className="border-t p-6 space-y-4">
-              <div className="flex justify-between items-center font-semibold">
-                <span>Total:</span>
-                <span className="text-xl text-blue-600">${total.toFixed(2)}</span>
+              <div className="text-center text-sm text-gray-600 mb-4">
+                Total cost will be calculated based on your plan selection for each app
               </div>
               
               {availableForPurchase.length < cartItems.length && (
@@ -215,18 +208,18 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
               <div className="space-y-2">
                 <button
                   onClick={handleProceedToCheckout}
-                  disabled={isProcessing || availableForPurchase.length === 0}
+                  disabled={isProcessing || !hasItemsForPurchase}
                   className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-                    isProcessing || availableForPurchase.length === 0
+                    isProcessing || !hasItemsForPurchase
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-blue-500 text-white hover:bg-blue-600'
                   }`}
                 >
                   {isProcessing 
                     ? 'Processing...' 
-                    : availableForPurchase.length === 0
+                    : !hasItemsForPurchase
                     ? 'No Items to Purchase'
-                    : `Purchase`
+                    : `Proceed to Checkout`
                   }
                 </button>
                 

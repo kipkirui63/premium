@@ -32,9 +32,9 @@ const MarketplaceContent = () => {
   const [cartItems, setCartItems] = useState<App[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+
   const [userRatings, setUserRatings] = useState<{ [key: number]: number }>({});
-  const [selectedPlan, setSelectedPlan] = useState<{type: 'monthly' | 'yearly', price: number} | null>(null);
+
   const { user } = useAuth();
 
   const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
@@ -138,12 +138,6 @@ const MarketplaceContent = () => {
     return;
   }
 
-  // Check if user has selected a plan
-  if (!selectedPlan) {
-    toast.info('Please select a subscription plan first');
-    return;
-  }
-
   setCartItems(prev => {
     const exists = prev.find(cartItem => cartItem.id === item.id);
     if (exists) {
@@ -173,12 +167,7 @@ const MarketplaceContent = () => {
     }));
   };
 
-  const handlePlanSelect = (plan: 'monthly' | 'yearly', price: number) => {
-    setSelectedPlan({ type: plan, price });
-    setIsPricingModalOpen(false);
-    // After selecting a plan, users can now add items to cart
-    toast.success(`${plan.charAt(0).toUpperCase() + plan.slice(1)} plan selected - $${price}. You can now add items to your cart!`);
-  };
+
 
   return (
     <>
@@ -195,17 +184,13 @@ const MarketplaceContent = () => {
             onSignInClick={() => setIsLoginModalOpen(true)}
           />
           
-          {/* Pricing Plans Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <PricingPlans onSelectPlan={handlePlanSelect} />
-          </div>
+
           
           <AppsGrid
             apps={filteredApps}
             userRatings={userRatings}
             onAddToCart={addToCart}
             onRate={handleRate}
-            selectedPlan={selectedPlan?.type || 'monthly'}
           />
         </div>
       </div>
@@ -216,9 +201,7 @@ const MarketplaceContent = () => {
         cartItems={cartItems}
         onRemoveItem={removeFromCart}
         onClearCart={clearCart}
-        onOpenPricingModal={() => setIsPricingModalOpen(true)}
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
-        selectedPlan={selectedPlan}
       />
 
       <LoginModal
@@ -226,23 +209,7 @@ const MarketplaceContent = () => {
         onClose={() => setIsLoginModalOpen(false)}
       />
 
-      {/* Pricing Modal */}
-      {isPricingModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Choose Your Subscription Plan</h2>
-              <button
-                onClick={() => setIsPricingModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </div>
-            <PricingPlans onSelectPlan={handlePlanSelect} />
-          </div>
-        </div>
-      )}
+
     </>
   );
 };

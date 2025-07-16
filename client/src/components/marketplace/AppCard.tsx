@@ -25,12 +25,14 @@ interface AppCardProps {
   userRating: number;
   onAddToCart: (app: App) => void;
   onRate: (appId: number, rating: number) => void;
-  selectedPlan: 'monthly' | 'yearly';
 }
 
-const AppCard = ({ app, userRating, onAddToCart, onRate, selectedPlan }: AppCardProps) => {
+const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const { user } = useAuth();
   const { hasPurchased, isLoading, checkSubscription } = useSubscription();
+  
+  // Add local state for plan selection within each card
+  const [selectedPlan, setSelectedPlan] = React.useState<'monthly' | 'yearly'>('monthly');
   
   const hasAccessToApp = hasPurchased(app.name);
   
@@ -216,6 +218,32 @@ const AppCard = ({ app, userRating, onAddToCart, onRate, selectedPlan }: AppCard
               </div>
             )}
             <div className="text-sm text-green-600">{app.freeTrialDays}</div>
+          </div>
+        </div>
+        
+        {/* Plan Selector */}
+        <div className="mb-4">
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setSelectedPlan('monthly')}
+              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                selectedPlan === 'monthly'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setSelectedPlan('yearly')}
+              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                selectedPlan === 'yearly'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Yearly
+            </button>
           </div>
         </div>
         

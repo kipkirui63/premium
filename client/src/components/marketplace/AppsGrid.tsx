@@ -24,10 +24,9 @@ interface AppsGridProps {
   userRatings: { [key: number]: number };
   onAddToCart: (app: App) => void;
   onRate: (appId: number, rating: number) => void;
-  selectedPlan: 'monthly' | 'yearly';
 }
 
-const AppsGrid = ({ apps, userRatings, onAddToCart, onRate, selectedPlan }: AppsGridProps) => {
+const AppsGrid = ({ apps, userRatings, onAddToCart, onRate }: AppsGridProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {apps.map((app) => (
@@ -37,7 +36,6 @@ const AppsGrid = ({ apps, userRatings, onAddToCart, onRate, selectedPlan }: Apps
           userRating={userRatings[app.id] || 0}
           onAddToCart={onAddToCart}
           onRate={onRate}
-          selectedPlan={selectedPlan}
         />
       ))}
     </div>
