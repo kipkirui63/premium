@@ -36,10 +36,13 @@ const Navigation = () => {
               
               {user ? (
                 <div className="flex items-center space-x-4">
-                  <span className="flex items-center space-x-1 text-gray-600">
+                  <Link
+                    to="/profile"
+                    className="flex items-center space-x-1 text-gray-600 hover:text-blue-500 transition-colors duration-200"
+                  >
                     <User className="w-4 h-4" />
-                    <span>{user.email}</span>
-                  </span>
+                    <span>Profile</span>
+                  </Link>
                   <button 
                     onClick={logout}
                     className="flex items-center space-x-1 text-gray-600 hover:text-blue-500 transition-colors duration-200"

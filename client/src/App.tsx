@@ -6,6 +6,7 @@ import { Router, Route, Switch } from "wouter";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import Marketplace from "./pages/Marketplace";
+import Profile from "./components/Profile";
 import NotFound from "./pages/NotFound";
 import { queryClient } from "./lib/queryClient";
 
@@ -18,6 +19,7 @@ const App = () => (
             <Switch>
               <Route path="/" component={Marketplace} />
               <Route path="/marketplace" component={Marketplace} />
+              <Route path="/profile" component={Profile} />
               <Route component={NotFound} />
             </Switch>
           </Router>

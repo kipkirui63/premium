@@ -13,6 +13,7 @@ interface App {
   yearlyPrice: number;
   icon: string;
   isComingSoon?: boolean;
+  selectedPlan?: 'monthly' | 'yearly';
 }
 
 interface CartSidebarProps {
@@ -79,21 +80,46 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
     setIsProcessing(true);
 
     try {
-      // Show pricing modal instead of direct checkout
-      onClose();
-      onOpenPricingModal?.();
+      // For now, handle the first item in the cart
+      const item = availableItems[0];
+      const planType = item.selectedPlan || 'monthly';
       
-      toast({
-        title: "Choose Your Plan",
-        description: "Select between monthly and yearly subscription plans",
+      const response = await fetch('https://api.crispai.ca/api/stripe/create-checkout/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tool_id: item.id,
+          plan_type: planType
+        }),
       });
-      
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.checkout_url) {
+          window.location.href = data.checkout_url;
+        } else {
+          toast({
+            title: "Checkout Failed",
+            description: "Unable to create checkout session. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Checkout Failed",
+          description: error.detail || "An error occurred during checkout. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
-      console.error('Checkout error details:', error);
-      
+      console.error('Checkout error:', error);
       toast({
-        title: "Error",
-        description: "Failed to open pricing plans. Please try again.",
+        title: "Checkout Failed",
+        description: "An error occurred during checkout. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -126,8 +152,13 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
 
   // Filter out already purchased apps from total calculation
   const availableForPurchase = cartItems.filter(item => !item.isComingSoon && !hasPurchased(item.name));
-  // Since each card has its own pricing now, we'll show a message that total depends on individual selections
   const hasItemsForPurchase = availableForPurchase.length > 0;
+  
+  // Calculate total based on selected plans
+  const totalCost = availableForPurchase.reduce((sum, item) => {
+    const price = item.selectedPlan === 'yearly' ? item.yearlyPrice : item.monthlyPrice;
+    return sum + price;
+  }, 0);
 
   if (!isOpen) return null;
 
@@ -170,8 +201,13 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
                     <img src={item.icon} alt={item.name} className="w-12 h-12 rounded object-cover" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm truncate">{item.name}</h3>
-                      <p className="text-gray-600 text-xs">
-                        From ${item.monthlyPrice}/month
+                      <p className="text-blue-600 text-xs font-semibold">
+                        {item.selectedPlan === 'yearly' 
+                          ? `$${item.yearlyPrice}/year` 
+                          : `$${item.monthlyPrice}/month`}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        {item.selectedPlan === 'yearly' ? 'Yearly Plan' : 'Monthly Plan'}
                       </p>
                       {item.isComingSoon && (
                         <p className="text-gray-500 text-xs">Coming Soon</p>
@@ -195,9 +231,11 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
           {/* Footer */}
           {cartItems.length > 0 && (
             <div className="border-t p-6 space-y-4">
-              <div className="text-center text-sm text-gray-600 mb-4">
-                Total cost will be calculated based on your plan selection for each app
-              </div>
+              {hasItemsForPurchase && (
+                <div className="text-center text-lg font-semibold text-gray-900 mb-4">
+                  Total: ${totalCost.toFixed(2)}
+                </div>
+              )}
               
               {availableForPurchase.length < cartItems.length && (
                 <div className="text-center text-green-600 text-sm font-medium">

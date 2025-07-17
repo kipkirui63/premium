@@ -25,6 +25,7 @@ interface App {
   backgroundGradient: string;
   agentUrl?: string;
   isComingSoon?: boolean;
+  selectedPlan?: 'monthly' | 'yearly';
 }
 
 const MarketplaceContent = () => {
@@ -130,7 +131,7 @@ const MarketplaceContent = () => {
         return categoryMap[activeTab]?.includes(app.name);
       });
 
- const addToCart = (item: App) => {
+ const addToCart = (item: App, planType?: 'monthly' | 'yearly') => {
   // Check if user is logged in
   if (!user) {
     setIsLoginModalOpen(true);
@@ -144,8 +145,11 @@ const MarketplaceContent = () => {
       toast.info(`${item.name} is already in the cart.`);
       return prev;
     }
-    toast.success(`${item.name} added to cart successfully!`);
-    return [...prev, item];
+    
+    // Add plan type to the item
+    const itemWithPlan = { ...item, selectedPlan: planType || 'monthly' };
+    toast.success(`${item.name} (${planType || 'monthly'}) added to cart successfully!`);
+    return [...prev, itemWithPlan];
   });
 };
 

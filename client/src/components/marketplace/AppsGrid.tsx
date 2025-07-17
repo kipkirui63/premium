@@ -22,7 +22,7 @@ interface App {
 interface AppsGridProps {
   apps: App[];
   userRatings: { [key: number]: number };
-  onAddToCart: (app: App) => void;
+  onAddToCart: (app: App, planType?: 'monthly' | 'yearly') => void;
   onRate: (appId: number, rating: number) => void;
 }
 

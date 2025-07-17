@@ -23,7 +23,7 @@ interface App {
 interface AppCardProps {
   app: App;
   userRating: number;
-  onAddToCart: (app: App) => void;
+  onAddToCart: (app: App, planType?: 'monthly' | 'yearly') => void;
   onRate: (appId: number, rating: number) => void;
 }
 
@@ -147,7 +147,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     if (!user) {
       return (
         <button 
-          onClick={() => onAddToCart(app)}
+          onClick={() => onAddToCart(app, selectedPlan)}
           className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
         >
           <ShoppingCart className="w-4 h-4" />
@@ -170,13 +170,11 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
 
     return (
       <button 
-        onClick={() => onAddToCart(app)}
+        onClick={() => onAddToCart(app, selectedPlan)}
         className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
       >
         <ShoppingCart className="w-4 h-4" />
-        <span>Purchase
-
-</span>
+        <span>Purchase</span>
       </button>
     );
   };
