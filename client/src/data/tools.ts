@@ -97,22 +97,22 @@ export const TOOLS: Tool[] = [
     agentUrl: 'https://workflow.getmindpal.com/67751e695156e8aaefc0c8de',
     isComingSoon: false,
   },
-  {
-    id: 6,
-    name: 'Coupon',
-    description: 'Flexible access to AI tools and resources at a discounted monthly rate. Ideal for users seeking great value with full platform capabilities.',
-    monthlyPrice: 19.00,
-    yearlyPrice: 199.00,
-    freeTrialDays: '7-day free trial',
-    rating: 4.5,
-    reviewCount: 48,
-    badge: 'New',
-    badgeColor: 'bg-green-500',
-    icon: '/lovable-uploads/your-coupon-icon.png',
-    backgroundGradient: 'bg-gradient-to-br from-green-400 to-blue-500',
-    agentUrl: 'https://www.crispai.ca/coupon',
-    isComingSoon: false
-}
+//   {
+//     id: 6,
+//     name: 'Coupon',
+//     description: 'Flexible access to AI tools and resources at a discounted monthly rate. Ideal for users seeking great value with full platform capabilities.',
+//     monthlyPrice: 19.00,
+//     yearlyPrice: 199.00,
+//     freeTrialDays: '7-day free trial',
+//     rating: 4.5,
+//     reviewCount: 48,
+//     badge: 'New',
+//     badgeColor: 'bg-green-500',
+//     icon: '/lovable-uploads/your-coupon-icon.png',
+//     backgroundGradient: 'bg-gradient-to-br from-green-400 to-blue-500',
+//     agentUrl: 'https://www.crispai.ca/coupon',
+//     isComingSoon: false
+// }
 
 ];
 
