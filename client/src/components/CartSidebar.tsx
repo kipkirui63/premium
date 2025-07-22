@@ -91,7 +91,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tool_id: item.id,
+          tool_id: item.id, 
           plan_type: planType
         }),
       });

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://api.crispai.ca/api';
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 interface CheckoutResponse {
   checkout_url: string;
@@ -6,7 +6,8 @@ interface CheckoutResponse {
 
 export const createCheckoutSession = async (
   token: string,
-  toolId: string
+  toolId: number | string,  // match backend's tool_id logic
+  planType: 'monthly' | 'yearly' = 'monthly'
 ): Promise<string> => {
   const response = await fetch(`${API_BASE_URL}/stripe/create-checkout/`, {
     method: 'POST',
@@ -14,7 +15,10 @@ export const createCheckoutSession = async (
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify({ tool_id: toolId })
+    body: JSON.stringify({ 
+      tool_id: toolId,        // ✅ use tool_id not tool_name
+      plan_type: planType 
+    })
   });
 
   if (!response.ok) {

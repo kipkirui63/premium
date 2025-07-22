@@ -35,7 +35,7 @@ export const useAuth = () => {
   return context;
 };
 
-const API_BASE_URL = 'https://api.crispai.ca/api'; 
+const API_BASE_URL = 'https://api.crispai.ca/api/auth'; 
 
 const endpoints = {
   register: `${API_BASE_URL}/register/`,
