@@ -84,7 +84,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
       const item = availableItems[0];
       const planType = item.selectedPlan || 'monthly';
       
-      const response = await fetch('https://api.crispai.ca/api/stripe/create-checkout/', {
+      const response = await fetch('https://all.staging.crispai.ca/api/stripe/create-checkout/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -1,9 +1,9 @@
 import { loadStripe } from '@stripe/stripe-js';
-
+const API_BASE_URL = 'https://all.staging.crispai.ca/api';
 // Fetch Stripe publishable key from backend
 const fetchStripeConfig = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/stripe/config/');
+    const response = await fetch(`${API_BASE_URL}/stripe/config/`);
     if (!response.ok) {
       throw new Error('Failed to fetch Stripe config');
     }
