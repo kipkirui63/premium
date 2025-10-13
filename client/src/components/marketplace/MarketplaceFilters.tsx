@@ -47,9 +47,9 @@ const MarketplaceFilters = ({
           />
         </div>
         <div className="flex items-center space-x-4">
-          <button className="p-2 text-gray-600 hover:text-blue-500">
+          {/* <button className="p-2 text-gray-600 hover:text-blue-500">
             <Home className="w-5 h-5" />
-          </button>
+          </button> */}
           <button 
             className="relative p-2 text-gray-600 hover:text-blue-500"
             onClick={onCartClick}
@@ -65,7 +65,7 @@ const MarketplaceFilters = ({
             onClick={onSignInClick}
             className="text-gray-600 hover:text-blue-500 font-medium"
           >
-            Sign In
+            
           </button>
         </div>
       </div>

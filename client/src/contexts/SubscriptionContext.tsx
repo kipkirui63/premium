@@ -24,7 +24,7 @@ export const useSubscription = () => {
   return context;
 };
 
-const API_BASE_URL = "https://api.crispai.ca/api/subscription";
+const API_BASE_URL = "https://all.staging.crispai.ca/api";
 
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [purchasedApps, setPurchasedApps] = useState<string[]>([]);
@@ -73,7 +73,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       const currentToolMap = Object.keys(toolMap).length > 0 ? toolMap : await fetchToolList();
 
-      const response = await fetch(`${API_BASE_URL}/auth/check-subscription/`, {
+      const response = await fetch(`${API_BASE_URL}/subscription/check/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

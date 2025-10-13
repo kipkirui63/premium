@@ -261,14 +261,14 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
                   }
                 </button>
                 
-                {user && (
+                {/* {user && (
                   <button
                     onClick={handleManualRefresh}
                     className="w-full py-2 px-4 rounded-lg font-medium text-blue-500 border border-blue-500 hover:bg-blue-50 transition-colors"
                   >
                     Refresh Purchase Status
                   </button>
-                )}
+              )} */}
               </div>
             </div>
           )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, Phone } from 'lucide-react';
+import { X, Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,8 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login, register, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -84,6 +86,8 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         setFirstName('');
         setLastName('');
         setPhone('');
+        setShowPassword(false);
+        setShowConfirmPassword(false);
         setIsRegister(false);
       } else {
         console.log('Attempting login...');
@@ -100,6 +104,8 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         setFirstName('');
         setLastName('');
         setPhone('');
+        setShowPassword(false);
+        setShowConfirmPassword(false);
         onClose();
         onSuccess?.();
       }
@@ -225,15 +231,28 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                className="pl-10 pr-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
                 minLength={6}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                disabled={isLoading}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -246,15 +265,28 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   id="confirmPassword"
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 pr-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   placeholder="••••••••"
                   required
                   disabled={isLoading}
                   minLength={6}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  disabled={isLoading}
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
           )}
