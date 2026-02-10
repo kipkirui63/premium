@@ -1,5 +1,5 @@
 import { loadStripe } from '@stripe/stripe-js';
-const API_BASE_URL = 'https://all.staging.crispai.ca/api';
+const API_BASE_URL = 'https://all.crispai.ca/api';
 // Fetch Stripe publishable key from backend
 const fetchStripeConfig = async () => {
   try {

@@ -35,7 +35,7 @@ const Profile = () => {
     queryKey: ['subscriptions'],
     queryFn: async () => {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('https://all.staging.crispai.ca/api/subscription/my-subscriptions/', {
+      const response = await fetch('https://all.crispai.ca/api/subscription/my-subscriptions/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ const Profile = () => {
   const changePassword = useMutation({
     mutationFn: async (data: { current_password: string; new_password: string }) => {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('https://all.staging.crispai.ca/api/auth/change-password/', {
+      const response = await fetch('https://all.crispai.ca/api/auth/change-password/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -86,7 +86,7 @@ const Profile = () => {
   const cancelSubscription = useMutation({
     mutationFn: async (subscriptionId: number) => {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('https://all.staging.crispai.ca/api/subscription/cancel/', {
+      const response = await fetch('https://all.crispai.ca/api/subscription/cancel/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
