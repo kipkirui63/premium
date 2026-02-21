@@ -18,6 +18,7 @@ interface App {
   backgroundGradient: string;
   agentUrl?: string;
   isComingSoon?: boolean;
+  actionType?: 'view' | 'cart';
 }
 
 interface AppCardProps {
@@ -144,6 +145,22 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       );
     }
 
+    if (app.actionType === 'view') {
+      return (
+        <button
+          onClick={() => {
+            if (app.agentUrl) {
+              window.open(app.agentUrl, '_blank');
+            }
+          }}
+          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
+        >
+          <ExternalLink className="w-4 h-4" />
+          <span>View</span>
+        </button>
+      );
+    }
+
     if (!user) {
       return (
         <button 
@@ -199,14 +216,22 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className="flex items-center justify-between mb-2">
           <h3 
             className={`font-bold text-xl transition-colors ${
-              app.agentUrl && !app.isComingSoon && hasAccessToApp
+              app.agentUrl && !app.isComingSoon && (hasAccessToApp || app.actionType === 'view')
                 ? 'text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1' 
                 : 'text-gray-900'
             }`}
-            onClick={app.agentUrl && !app.isComingSoon && hasAccessToApp ? handleAgentClick : undefined}
+            onClick={
+              app.agentUrl && !app.isComingSoon && (hasAccessToApp || app.actionType === 'view')
+                ? app.actionType === 'view'
+                  ? () => window.open(app.agentUrl, '_blank')
+                  : handleAgentClick
+                : undefined
+            }
           >
             {app.name}
-            {app.agentUrl && !app.isComingSoon && hasAccessToApp && <ExternalLink className="w-4 h-4" />}
+            {app.agentUrl && !app.isComingSoon && (hasAccessToApp || app.actionType === 'view') && (
+              <ExternalLink className="w-4 h-4" />
+            )}
           </h3>
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600">{priceText}</div>

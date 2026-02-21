@@ -17,6 +17,7 @@ interface App {
   backgroundGradient: string;
   agentUrl?: string;
   isComingSoon?: boolean;
+  actionType?: 'view' | 'cart';
 }
 
 interface AppsGridProps {

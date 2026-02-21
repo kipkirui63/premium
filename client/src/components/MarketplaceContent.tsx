@@ -36,7 +36,7 @@ const MarketplaceContent = () => {
           'Analytics': ['Business Intelligence Agent'],
           'Writing': ['CrispWrite'],
           'Recruitment': ['AI Recruitment Assistant', 'Resume Analyzer'],
-          'Business': ['SOP Assistant']
+          'Business': ['SOP Assistant', 'AI Twin Agent', 'Email Scrapper', 'CustomGPTs']
         };
         return categoryMap[activeTab]?.includes(app.name);
       });

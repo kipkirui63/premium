@@ -14,6 +14,7 @@ export interface Tool {
   backgroundGradient: string;
   agentUrl?: string;
   isComingSoon?: boolean;
+  actionType?: 'view' | 'cart';
 }
 
 export const TOOLS: Tool[] = [
@@ -96,6 +97,57 @@ export const TOOLS: Tool[] = [
     backgroundGradient: 'bg-gradient-to-br from-indigo-400 to-blue-600',
     agentUrl: 'https://workflow.getmindpal.com/67751e695156e8aaefc0c8de',
     isComingSoon: false,
+  },
+  {
+    id: 6,
+    name: 'AI Twin Agent',
+    description: 'Create an AI twin that mirrors your tone and expertise to engage customers and handle conversations in real time.',
+    monthlyPrice: 50.00,
+    yearlyPrice: 100.99,
+    freeTrialDays: '7-day free trial',
+    rating: 4.7,
+    reviewCount: 128,
+    badge: 'Popular',
+    badgeColor: 'bg-blue-500',
+    icon: '/lovable-uploads/twin.jpeg',
+    backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600',
+    agentUrl: 'https://aitwin.crispai.ca/',
+    isComingSoon: false,
+    actionType: 'view',
+  },
+  {
+    id: 7,
+    name: 'Email Scrapper',
+    description: 'Collect and organize verified business emails from targeted domains with smart filtering and export options.',
+    monthlyPrice: 21.99,
+    yearlyPrice: 100.99,
+    freeTrialDays: '7-day free trial',
+    rating: 4.5,
+    reviewCount: 92,
+    badge: 'New',
+    badgeColor: 'bg-green-500',
+    icon: '/lovable-uploads/scrape.png',
+    backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600',
+    agentUrl: 'https://emailscrapper.crispai.ca/',
+    isComingSoon: false,
+    actionType: 'view',
+  },
+  {
+    id: 8,
+    name: 'CustomGPTs',
+    description: 'Build and deploy tailored GPTs for your team with private knowledge, tools, and workflows.',
+    monthlyPrice: 15.00,
+    yearlyPrice: 199.99,
+    freeTrialDays: '7-day free trial',
+    rating: 4.8,
+    reviewCount: 84,
+    badge: 'Trending',
+    badgeColor: 'bg-gray-500',
+    icon: '/lovable-uploads/gpts.jpeg',
+    backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600',
+    agentUrl: 'https://customgpts.crispai.ca/',
+    isComingSoon: false,
+    actionType: 'view',
   },
 //   {
 //     id: 6,
