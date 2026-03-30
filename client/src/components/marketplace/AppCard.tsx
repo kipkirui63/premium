@@ -38,7 +38,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const hasAccessToApp = hasPurchased(app.name);
   
   // Calculate dynamic price based on selected plan
-  const displayPrice = selectedPlan === 'yearly' ? app.yearlyPrice : app.monthlyPrice;
   const priceText = selectedPlan === 'yearly' ? 
     `$${app.yearlyPrice}/year` : 
     `$${app.monthlyPrice}/month`;
@@ -127,7 +126,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return (
         <button 
           disabled
-          className="w-full bg-gray-300 text-white py-3 px-4 rounded-lg cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+          className="flex w-full items-center justify-center space-x-2 rounded-full bg-slate-300 px-4 py-3 font-medium text-white"
         >
           <span>Loading...</span>
         </button>
@@ -138,7 +137,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return (
         <button 
           disabled
-          className="w-full bg-gray-400 text-white py-3 px-4 rounded-lg cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+          className="flex w-full items-center justify-center space-x-2 rounded-full bg-slate-400 px-4 py-3 font-medium text-white"
         >
           <span>Coming Soon</span>
         </button>
@@ -153,7 +152,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
               window.open(app.agentUrl, '_blank');
             }
           }}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
+          className="flex w-full items-center justify-center space-x-2 rounded-full bg-sky-500 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-600"
         >
           <ExternalLink className="w-4 h-4" />
           <span>View</span>
@@ -165,7 +164,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return (
         <button 
           onClick={() => onAddToCart(app, selectedPlan)}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
+          className="flex w-full items-center justify-center space-x-2 rounded-full bg-sky-500 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-600"
         >
           <ShoppingCart className="w-4 h-4" />
           <span>Add to Cart</span>
@@ -177,7 +176,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return (
         <button 
           onClick={handleAgentClick}
-          className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors font-medium flex items-center justify-center space-x-2"
+          className="flex w-full items-center justify-center space-x-2 rounded-full bg-emerald-500 px-4 py-3 font-medium text-white transition-colors hover:bg-emerald-600"
         >
           <ExternalLink className="w-4 h-4" />
           <span>Access App</span>
@@ -188,7 +187,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     return (
       <button 
         onClick={() => onAddToCart(app, selectedPlan)}
-        className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
+        className="flex w-full items-center justify-center space-x-2 rounded-full bg-sky-500 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-600"
       >
         <ShoppingCart className="w-4 h-4" />
         <span>Purchase</span>
@@ -199,26 +198,27 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-      <div className={`relative h-64 ${app.backgroundGradient} flex items-center justify-center`}>
-        <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded z-10`}>
+    <div className="group overflow-hidden rounded-[2rem] border border-sky-100 bg-white shadow-[0_24px_70px_-45px_rgba(14,165,233,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_80px_-40px_rgba(14,165,233,0.45)]">
+      <div className={`relative flex h-64 items-center justify-center overflow-hidden ${app.backgroundGradient}`}>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(15,23,42,0.18))]" />
+        <div className={`absolute top-4 right-4 ${app.badgeColor} z-10 rounded-full px-3 py-1 text-xs font-bold text-white`}>
           {app.badge}
         </div>
         {user && hasAccessToApp && !app.isComingSoon && (
-          <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
+          <div className="absolute left-4 top-4 z-10 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white">
             Owned
           </div>
         )}
-        <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
+        <img src={app.icon} alt={app.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
       </div>
       
       <div className="p-6">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-4 flex items-start justify-between gap-4">
           <h3 
-            className={`font-bold text-xl transition-colors ${
+            className={`text-xl font-bold transition-colors ${
               app.agentUrl && !app.isComingSoon && (hasAccessToApp || app.actionType === 'view')
-                ? 'text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1' 
-                : 'text-gray-900'
+                ? 'flex cursor-pointer items-center gap-1 text-slate-900 hover:text-sky-600' 
+                : 'text-slate-900'
             }`}
             onClick={
               app.agentUrl && !app.isComingSoon && (hasAccessToApp || app.actionType === 'view')
@@ -233,8 +233,8 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
               <ExternalLink className="w-4 h-4" />
             )}
           </h3>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-blue-600">{priceText}</div>
+          <div className="rounded-2xl bg-sky-50 px-4 py-3 text-right">
+            <div className="text-2xl font-bold text-sky-600">{priceText}</div>
             {selectedPlan === 'yearly' && saveAmount > 0 && (
               <div className="text-xs text-green-600 font-medium">
                 Save {savePercentage}% (${saveAmount.toFixed(0)})
@@ -244,25 +244,24 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
           </div>
         </div>
         
-        {/* Plan Selector */}
         <div className="mb-4">
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex rounded-full bg-sky-50 p-1">
             <button
               onClick={() => setSelectedPlan('monthly')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
                 selectedPlan === 'monthly'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'bg-white text-sky-600 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-800'
               }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setSelectedPlan('yearly')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
                 selectedPlan === 'yearly'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'bg-white text-sky-600 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-800'
               }`}
             >
               Yearly
@@ -270,13 +269,13 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
           </div>
         </div>
         
-        <p className="text-gray-600 text-sm mb-4 leading-relaxed">{app.description}</p>
+        <p className="mb-5 text-sm leading-7 text-slate-600">{app.description}</p>
         
-        <div className="flex items-center space-x-2 mb-4">
+        <div className="mb-5 flex items-center space-x-2">
           <div className="flex">
             {renderStars(false)}
           </div>
-          <span className="text-sm text-gray-600">({displayReviewCount})</span>
+          <span className="text-sm text-slate-500">({displayReviewCount})</span>
         </div>
         
         {getActionButton()}
