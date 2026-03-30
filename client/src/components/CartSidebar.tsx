@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { X, ShoppingCart, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
-import { createCheckoutSession } from '../services/checkoutService';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '../lib/api';
 
 interface App {
   id: number;
@@ -27,15 +27,14 @@ interface CartSidebarProps {
 
 const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, onOpenLoginModal }: CartSidebarProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-   const { user, checkTokenExpiry } = useAuth();
-    const token = localStorage.getItem('access_token');
+  const { user, checkTokenExpiry } = useAuth();
   const { hasPurchased, checkSubscription } = useSubscription();
   const { toast } = useToast();
 
   const handleProceedToCheckout = async () => {
-    console.log('Checkout clicked - User:', !!user, 'Token:', !!token);
+    console.log('Checkout clicked - User:', !!user);
 
-    if (!user || !token) {
+    if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please sign in to proceed with checkout.",
@@ -83,35 +82,22 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
       // For now, handle the first item in the cart
       const item = availableItems[0];
       const planType = item.selectedPlan || 'monthly';
-      
-      const response = await fetch('https://all.crispai.ca/api/stripe/create-checkout/', {
+
+      const data = await apiRequest<{ checkout_url?: string; detail?: string }>('/stripe/create-checkout/', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        auth: true,
         body: JSON.stringify({
           tool_id: item.id, 
           plan_type: planType
         }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.checkout_url) {
-          window.location.href = data.checkout_url;
-        } else {
-          toast({
-            title: "Checkout Failed",
-            description: "Unable to create checkout session. Please try again.",
-            variant: "destructive",
-          });
-        }
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
       } else {
-        const error = await response.json();
         toast({
           title: "Checkout Failed",
-          description: error.detail || "An error occurred during checkout. Please try again.",
+          description: data.detail || "Unable to create checkout session. Please try again.",
           variant: "destructive",
         });
       }
