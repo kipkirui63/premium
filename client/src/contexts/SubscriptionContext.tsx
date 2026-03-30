@@ -6,6 +6,7 @@ import React, {
   useRef,
 } from "react";
 import { useAuth } from "./AuthContext";
+import { apiRequest } from "../lib/api";
 
 interface SubscriptionContextType {
   purchasedApps: string[];
@@ -24,15 +25,12 @@ export const useSubscription = () => {
   return context;
 };
 
-const API_BASE_URL = "https://all.crispai.ca/api";
-
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [purchasedApps, setPurchasedApps] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(null);
   const [toolMap, setToolMap] = useState<{ [key: number]: string }>({});
   const { user } = useAuth();
-  const token = localStorage.getItem('access_token');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const hasPurchased = (appName: string): boolean => {
@@ -40,16 +38,9 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const fetchToolList = async (): Promise<{ [key: number]: string }> => {
-    if (!token) return {};
+    if (!user) return {};
     try {
-      const response = await fetch(`${API_BASE_URL}/tools/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error(`Failed to fetch tools: ${response.status}`);
-      const data = await response.json();
+      const data = await apiRequest<Array<{ id: number; name: string }>>("/tools/");
       const mapping: { [key: number]: string } = {};
       data.forEach((tool: { id: number; name: string }) => {
         mapping[tool.id] = tool.name;
@@ -63,7 +54,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const checkSubscription = async (): Promise<void> => {
-    if (!token || !user) {
+    if (!user) {
       setPurchasedApps([]);
       setSubscriptionExpiry(null);
       return;
@@ -72,17 +63,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setIsLoading(true);
     try {
       const currentToolMap = Object.keys(toolMap).length > 0 ? toolMap : await fetchToolList();
-
-      const response = await fetch(`${API_BASE_URL}/subscription/check/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-      const data = await response.json();
+      const data = await apiRequest<{ has_access: boolean; tools: number[]; expiry_date?: string | null }>(
+        "/subscription/check/",
+        { auth: true },
+      );
 
       // Align with Django: expects { has_access: true, tools: [tool_ids] }
       if (data.has_access && Array.isArray(data.tools)) {
@@ -118,7 +102,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         urlParams.get("status") === "success" ||
         urlParams.get("success") === "true";
 
-      if (isPaymentSuccess && token && user) {
+      if (isPaymentSuccess && user) {
         window.history.replaceState({}, document.title, window.location.pathname);
         await fetchToolList();
 
@@ -133,10 +117,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     handlePaymentSuccess();
-  }, [token, user, toolMap]);
+  }, [user, purchasedApps.length, toolMap]);
 
   useEffect(() => {
-    if (token && user) {
+    if (user) {
       const initialize = async () => {
         await fetchToolList();
         await checkSubscription();
@@ -151,11 +135,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [token, user]);
+  }, [user]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && token && user) {
+      if (document.visibilityState === "visible" && user) {
         checkSubscription();
       }
     };
@@ -163,7 +147,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [token, user]);
+  }, [user]);
 
   return (
     <SubscriptionContext.Provider
