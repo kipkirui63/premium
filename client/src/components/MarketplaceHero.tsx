@@ -1,25 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 const MarketplaceHero = () => {
-  const [currentBgIndex, setCurrentBgIndex] = useState(0);
-  const backgroundImages = [
-    'https://images.unsplash.com/photo-1648737966636-2fc3a5fffc8a?w=1800&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxzZWFyY2h8MTV8fHRlY2hub2xvZ3l8ZW58MHx8MHx8fDA%3D',
-    'https://images.unsplash.com/photo-1760276888172-f123e959d4f2?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
-    'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
-    'https://plus.unsplash.com/premium_photo-1683121710572-7723bd2e235d?w=1800&auto=format&fit=crop&q=80&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzN8fHRlY2hub2xvZ3l8ZW58MHx8MHx8fDA%3D',
-    'https://images.unsplash.com/photo-1526666923127-b2970f64b422?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NjJ8fHRlY2hub2xvZ3l8ZW58MHx8MHx8fDA%3D'
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBgIndex((prevIndex) => 
-        prevIndex === backgroundImages.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 5000); // Change background every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [backgroundImages.length]);
-
   const scrollToMarketplace = () => {
     const marketplaceSection = document.querySelector('[data-marketplace-content]');
     if (marketplaceSection) {
@@ -28,58 +9,75 @@ const MarketplaceHero = () => {
   };
 
   return (
-    <div className="bg-blue-500 pt-16 relative overflow-hidden h-[600px]">
-      {/* Dark overlay for better text contrast */}
-      <div className="absolute inset-0 bg-black/30 z-0"></div>
-      
-      {/* Background image carousel */}
-      <div className="absolute inset-0">
-        {backgroundImages.map((image, index) => (
-          <div
-            key={image}
-            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${index === currentBgIndex ? 'opacity-100' : 'opacity-0'}`}
-            style={{ 
-              backgroundImage: `url(${image})`,
-              backgroundPosition: 'center center'
-            }}
-          />
-        ))}
-      </div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 h-full relative z-10 flex items-center">
-        <div className="flex items-center justify-between w-full">
-          {/* Left text content */}
-          <div className="text-white max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+    <section className="relative overflow-hidden border-b border-sky-100 bg-[linear-gradient(135deg,#e0f2fe_0%,#f0f9ff_45%,#ffffff_100%)] pt-16">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.14),transparent_30%)]" />
+      <div className="absolute left-0 top-24 h-56 w-56 rounded-full bg-sky-300/20 blur-3xl" />
+      <div className="absolute right-0 top-10 h-72 w-72 rounded-full bg-cyan-200/30 blur-3xl" />
+
+      <div className="relative mx-auto grid min-h-[680px] max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
+        <div className="max-w-2xl">
+          <div className="inline-flex rounded-full border border-sky-100 bg-white/80 px-4 py-2 shadow-sm backdrop-blur">
+            <img
+              src="/lovable-uploads/4db0eac4-a39c-4fac-9775-eed8e9a4bebb.png"
+              alt="CrispAI"
+              className="h-7 w-auto"
+            />
+          </div>
+
+          <div className="mt-8 rounded-[2rem] border border-white/80 bg-white/70 p-8 shadow-[0_30px_80px_-45px_rgba(14,165,233,0.45)] backdrop-blur">
+            <h1 className="text-4xl font-black leading-tight tracking-[-0.04em] text-slate-900 md:text-6xl">
               Find the Perfect<br />
               Digital Tools
             </h1>
-            <p className="text-xl mb-8">
+            <p className="mt-6 text-lg leading-8 text-slate-600 md:text-xl">
               Discover and purchase powerful<br />
               applications and AI agents to enhance<br />
               your workflow
             </p>
-            <button 
+            <button
               onClick={scrollToMarketplace}
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors shadow-lg"
+              className="mt-8 rounded-full bg-sky-500 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-sky-600"
             >
               Browse Marketplace
             </button>
           </div>
+        </div>
 
-          {/* Right image container */}
-          <div className="hidden lg:block">
-            {/* <div className="w-80 h-80 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20 flex items-center justify-center">
-              <img 
-                src="/lovable-uploads/4db0eac4-a39c-4fac-9775-eed8e9a4bebb.png" 
-                alt="CrispAI" 
-                className="h-32 w-auto"
+        <div className="relative hidden lg:block">
+          <div className="absolute inset-0 rounded-[2.5rem] bg-sky-300/20 blur-3xl" />
+          <div className="relative grid grid-cols-2 gap-5 rounded-[2.5rem] border border-white/80 bg-white/55 p-6 shadow-[0_30px_90px_-50px_rgba(2,132,199,0.45)] backdrop-blur">
+            <div className="overflow-hidden rounded-[1.75rem] bg-sky-100 shadow-md">
+              <img
+                src="/lovable-uploads/db8496d5-abfd-475d-acfa-4ec1a30bb1e6.png"
+                alt="Business Intelligence Agent"
+                className="h-48 w-full object-cover"
               />
-            </div> */}
+            </div>
+            <div className="mt-10 overflow-hidden rounded-[1.75rem] bg-sky-100 shadow-md">
+              <img
+                src="/lovable-uploads/4d97bc8a-c3f5-40eb-807d-b6745199d8dd.png"
+                alt="AI Recruitment Assistant"
+                className="h-56 w-full object-cover"
+              />
+            </div>
+            <div className="-mt-10 overflow-hidden rounded-[1.75rem] bg-sky-100 shadow-md">
+              <img
+                src="/lovable-uploads/d66f2274-4cd1-4479-83ff-ae819baf5942.png"
+                alt="CrispWrite"
+                className="h-56 w-full object-cover"
+              />
+            </div>
+            <div className="overflow-hidden rounded-[1.75rem] bg-sky-100 shadow-md">
+              <img
+                src="/lovable-uploads/e3d9814f-4b52-429f-8456-40b09db8f73a.png"
+                alt="SOP Assistant"
+                className="h-48 w-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
