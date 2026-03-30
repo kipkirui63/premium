@@ -1,11 +1,9 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MarketplaceFilters from './marketplace/MarketplaceFilters';
 import AppsGrid from './marketplace/AppsGrid';
 import CartSidebar from './CartSidebar';
 import LoginModal from './auth/LoginModal';
 import SubscriptionWarning from './SubscriptionWarning';
-import PricingPlans from './PricingPlans';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { TOOLS, Tool } from '../data/tools';
@@ -23,6 +21,48 @@ const MarketplaceContent = () => {
   const [userRatings, setUserRatings] = useState<{ [key: number]: number }>({});
 
   const { user } = useAuth();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authMode = params.get('auth');
+    const reason = params.get('reason');
+    const reasonMessages: Record<string, { message: string; type: 'error' | 'success' | 'info' }> = {
+      'session-expired': {
+        message: 'Your session has expired. Please sign in again.',
+        type: 'error',
+      },
+      'password-updated': {
+        message: 'Password changed successfully. Please sign in with your new password.',
+        type: 'success',
+      },
+      'session-required': {
+        message: 'Please sign in to continue.',
+        type: 'info',
+      },
+    };
+
+    if (authMode === 'login') {
+      setIsLoginModalOpen(true);
+    }
+
+    if (reason && reasonMessages[reason]) {
+      const { message, type } = reasonMessages[reason];
+      if (type === 'error') {
+        toast.error(message);
+      } else if (type === 'success') {
+        toast.success(message);
+      } else {
+        toast.info(message);
+      }
+      params.delete('reason');
+      const nextQuery = params.toString();
+      window.history.replaceState(
+        {},
+        document.title,
+        `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`,
+      );
+    }
+  }, []);
 
   const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
 
@@ -85,27 +125,27 @@ const MarketplaceContent = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 pt-16" data-marketplace-content>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen bg-transparent pt-10" data-marketplace-content>
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <SubscriptionWarning />
-          
-          <MarketplaceFilters
-            activeTab={activeTab}
-            tabs={tabs}
-            cartItemCount={cartItems.length}
-            onTabChange={setActiveTab}
-            onCartClick={() => setIsCartOpen(true)}
-            onSignInClick={() => setIsLoginModalOpen(true)}
-          />
-          
 
-          
-          <AppsGrid
-            apps={filteredApps}
-            userRatings={userRatings}
-            onAddToCart={addToCart}
-            onRate={handleRate}
-          />
+          <div className="rounded-[2rem] border border-white/80 bg-white/65 p-4 shadow-[0_30px_80px_-50px_rgba(14,165,233,0.35)] backdrop-blur md:p-6">
+            <MarketplaceFilters
+              activeTab={activeTab}
+              tabs={tabs}
+              cartItemCount={cartItems.length}
+              onTabChange={setActiveTab}
+              onCartClick={() => setIsCartOpen(true)}
+              onSignInClick={() => setIsLoginModalOpen(true)}
+            />
+
+            <AppsGrid
+              apps={filteredApps}
+              userRatings={userRatings}
+              onAddToCart={addToCart}
+              onRate={handleRate}
+            />
+          </div>
         </div>
       </div>
 
@@ -120,7 +160,20 @@ const MarketplaceContent = () => {
 
       <LoginModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('auth') === 'login') {
+            params.delete('auth');
+            params.delete('reason');
+            const nextQuery = params.toString();
+            window.history.replaceState(
+              {},
+              document.title,
+              `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`,
+            );
+          }
+        }}
       />
 
 
