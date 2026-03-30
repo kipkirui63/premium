@@ -97,5 +97,6 @@
 
   body {
     @apply bg-background text-foreground;
+    background-color: #f0f9ff;
   }
 }
