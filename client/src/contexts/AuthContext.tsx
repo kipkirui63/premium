@@ -1,4 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  apiRequest,
+  buildLoginRedirectUrl,
+  clearStoredAuth,
+  dispatchAuthExpired,
+  getStoredAccessToken,
+  getStoredRefreshToken,
+  isTokenValid,
+  subscribeToAuthExpired,
+} from '../lib/api';
 
 interface User {
   id?: string;
@@ -12,16 +22,17 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, turnstileToken?: string) => Promise<void>;
   register: (
     firstName: string,
     lastName: string,
     email: string,
     phone: string,
     password: string,
-    repeatPassword: string
+    repeatPassword: string,
+    turnstileToken?: string
   ) => Promise<string>;
-  logout: () => void;
+  logout: (options?: { redirectTo?: string | null }) => void;
   isLoading: boolean;
   error: string | null;
   verifyEmail: (uid: string, token: string) => Promise<boolean>;
@@ -35,16 +46,6 @@ export const useAuth = () => {
   return context;
 };
 
-const API_BASE_URL = 'https://all.crispai.ca/api/auth'; 
-
-const endpoints = {
-  register: `${API_BASE_URL}/register/`,
-  login: `${API_BASE_URL}/login/`,
-  activate: (uid: string, token: string) => `${API_BASE_URL}/activate/${uid}/${token}/`,
-  tools: `${API_BASE_URL}/tools/`,
-  createCheckout: `${API_BASE_URL}/stripe/create-checkout/`,
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,12 +53,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const token = getStoredAccessToken();
+
+    if (storedUser && isTokenValid(token)) {
       try {
         setUser(JSON.parse(storedUser));
       } catch {
-        logout();
+        clearStoredAuth();
       }
+    } else if (storedUser || token || getStoredRefreshToken()) {
+      clearStoredAuth();
     }
   }, []);
 
@@ -68,38 +73,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [error]);
 
-  const login = async (email: string, password: string) => {
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthExpired((event) => {
+      const reason = event.detail?.message || 'Your session has expired. Please sign in again.';
+      setError(reason);
+      logout({ redirectTo: buildLoginRedirectUrl('session-expired') });
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      const token = getStoredAccessToken();
+      if (token && !isTokenValid(token)) {
+        dispatchAuthExpired();
+      }
+    }, 60000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  const login = async (email: string, password: string, turnstileToken?: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(endpoints.login, {
+      const data = await apiRequest<{
+        access: string;
+        refresh: string;
+        user: User;
+      }>('/auth/login/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, turnstile_token: turnstileToken }),
       });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        // Check if this is an unverified account error
-        if (data.detail && (
-          data.detail.includes('account is not verified') ||
-          data.detail.includes('not verified') ||
-          data.detail.includes('verify your email') ||
-          data.detail.includes('account not activated') ||
-          data.detail.includes('activation required') ||
-          data.detail.includes('email verification') ||
-          data.detail.includes('activate your account')
-        )) {
-          throw new Error('Please verify your email first. Check your inbox for the activation link.');
-        }
-        throw new Error(data.detail || 'Login failed');
-      }
 
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
       
-
       const userData = data.user;
       const authenticatedUser: User = {
         id: userData.id,
@@ -108,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         last_name: userData.last_name,
         phone: userData.phone,
         role: userData.role,
-        is_verified: userData.is_verified || true,
+        is_verified: userData.is_verified ?? true,
       };
 
       setUser(authenticatedUser);
@@ -128,14 +138,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     email: string,
     phone: string,
     password: string,
-    repeatPassword: string
+    repeatPassword: string,
+    turnstileToken?: string
   ): Promise<string> => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(endpoints.register, {
+      const data = await apiRequest<{ detail?: string }>('/auth/register/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
@@ -143,16 +153,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           phone,
           password,
           repeat_password: repeatPassword,
+          turnstile_token: turnstileToken,
         }),
       });
-
-      const isJson = response.headers.get('content-type')?.includes('application/json');
-      const data = isJson ? await response.json() : { detail: 'Unexpected server error. Check endpoint URL.' };
-
-      if (!response.ok) {
-        const errMsg = data.detail || data.error || 'Registration failed';
-        throw new Error(errMsg);
-      }
 
       return data.detail || 'Verification email sent. Please check your inbox.';
     } catch (error) {
@@ -168,8 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(endpoints.activate(uid, token));
-      if (!response.ok) throw new Error('Verification failed');
+      await apiRequest(`/auth/activate/${uid}/${token}/`);
 
       if (user) {
         const verifiedUser = { ...user, is_verified: true };
@@ -187,24 +189,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
+  const logout = (options?: { redirectTo?: string | null }) => {
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    clearStoredAuth();
+
+    if (options?.redirectTo) {
+      window.location.assign(options.redirectTo);
+    }
   };
 
   const checkTokenExpiry = (): boolean => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return false;
-    
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Date.now() / 1000;
-      return payload.exp > currentTime;
-    } catch (error) {
-      return false;
+    const token = getStoredAccessToken();
+    const isValid = isTokenValid(token);
+    if (!isValid && token) {
+      dispatchAuthExpired();
     }
+    return isValid;
   };
 
   return (
@@ -232,10 +232,7 @@ interface CheckoutResponse {
 }
 
 export const fetchToolIdByName = async (toolName: string): Promise<string> => {
-  const response = await fetch(endpoints.tools);
-  if (!response.ok) throw new Error('Unable to fetch tools');
-
-  const data = await response.json();
+  const data = await apiRequest<Array<{ id: number; name: string }>>('/tools/');
   const tool = data.find((t: { name: string }) => t.name === toolName);
   if (!tool) throw new Error('Tool not found');
   return tool.id.toString();
@@ -244,17 +241,10 @@ export const fetchToolIdByName = async (toolName: string): Promise<string> => {
 export const createCheckoutSession = async (toolName: string): Promise<string> => {
   const toolId = await fetchToolIdByName(toolName);
 
-  const response = await fetch(endpoints.createCheckout, {
+  const data = await apiRequest<CheckoutResponse>('/stripe/create-checkout/', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    auth: true,
     body: JSON.stringify({ tool_id: toolId }),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Checkout failed');
-  }
-
-  const data: CheckoutResponse = await response.json();
   return data.checkout_url;
 };
