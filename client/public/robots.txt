@@ -12,3 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://marketplace.crispai.ca/sitemap.xml
+Host: https://marketplace.crispai.ca
