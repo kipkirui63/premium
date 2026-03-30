@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import TurnstileWidget from './TurnstileWidget';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -22,8 +23,11 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
   const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileNonce, setTurnstileNonce] = useState(0);
   const { login, register, isLoading } = useAuth();
   const { toast } = useToast();
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
   if (!isOpen) return null;
 
@@ -60,23 +64,32 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         return;
       }
 
-      if (password.length < 6) {
+      if (password.length < 8) {
         toast({
           title: "Validation Error",
-          description: "Password must be at least 6 characters long.",
+          description: "Password must be at least 8 characters long.",
           variant: "destructive",
         });
         return;
       }
     }
 
+    if (turnstileSiteKey && !turnstileToken) {
+      toast({
+        title: "Security Check Required",
+        description: "Please complete the security challenge before continuing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       if (isRegister) {
         console.log('Attempting registration...');
-        await register(firstName, lastName, email, phone, password, confirmPassword);
+        await register(firstName, lastName, email, phone, password, confirmPassword, turnstileToken);
         toast({
           title: "Registration Successful",
-          description: "Account created successfully! Please sign in to continue.",
+          description: "Account created successfully. Please check your email to activate it before signing in.",
         });
         
         // Clear form and switch to login
@@ -88,10 +101,12 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         setPhone('');
         setShowPassword(false);
         setShowConfirmPassword(false);
+        setTurnstileToken('');
+        setTurnstileNonce((current) => current + 1);
         setIsRegister(false);
       } else {
         console.log('Attempting login...');
-        await login(email, password);
+        await login(email, password, turnstileToken);
         toast({
           title: "Login Successful", 
           description: "Welcome back!",
@@ -106,11 +121,15 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         setPhone('');
         setShowPassword(false);
         setShowConfirmPassword(false);
+        setTurnstileToken('');
+        setTurnstileNonce((current) => current + 1);
         onClose();
         onSuccess?.();
       }
     } catch (error) {
       console.error('Auth error in modal:', error);
+      setTurnstileToken('');
+      setTurnstileNonce((current) => current + 1);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
@@ -222,6 +241,22 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
               </div>
             </div>
           )}
+
+          {turnstileSiteKey && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">Security Verification</Label>
+              <div key={turnstileNonce}>
+                <TurnstileWidget
+                  siteKey={turnstileSiteKey}
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken('')}
+                />
+              </div>
+              <p className="text-xs text-gray-500">
+                Complete the challenge to protect sign-in and registration from abuse.
+              </p>
+            </div>
+          )}
           
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium text-gray-700">
@@ -238,7 +273,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
-                minLength={6}
+                minLength={8}
               />
               <button
                 type="button"
