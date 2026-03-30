@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { Calendar, CreditCard, X, AlertCircle, User, Mail, Phone, Edit3, Shield, DollarSign, Clock, Eye, EyeOff } from 'lucide-react';
+import { apiRequest } from '../lib/api';
+import Seo from './Seo';
 
 interface Subscription {
   id: number;
@@ -16,7 +18,7 @@ interface Subscription {
 }
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const queryClient = useQueryClient();
   const [cancelingId, setCancelingId] = useState<number | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState<number | null>(null);
@@ -30,23 +32,17 @@ const Profile = () => {
   });
   const [passwordErrors, setPasswordErrors] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!user) {
+      window.location.assign('/marketplace?auth=login&reason=session-required');
+    }
+  }, [user]);
+
   // Fetch user's subscriptions
   const { data: subscriptions, isLoading, error } = useQuery<Subscription[]>({
     queryKey: ['subscriptions'],
     queryFn: async () => {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('https://all.crispai.ca/api/subscription/my-subscriptions/', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch subscriptions');
-      }
-      
-      return response.json();
+      return apiRequest<Subscription[]>('/subscription/my-subscriptions/', { auth: true });
     },
     enabled: !!user,
   });
@@ -54,28 +50,18 @@ const Profile = () => {
   // Change password mutation
   const changePassword = useMutation({
     mutationFn: async (data: { current_password: string; new_password: string }) => {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('https://all.crispai.ca/api/auth/change-password/', {
+      return apiRequest<{ detail: string }>('/auth/change-password/', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        auth: true,
         body: JSON.stringify(data),
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to change password');
-      }
-      
-      return response.json();
     },
-    onSuccess: () => {
-      toast.success('Password changed successfully');
+    onSuccess: (data) => {
+      toast.success(data.detail || 'Password changed successfully');
       setShowPasswordModal(false);
       setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
       setPasswordErrors(null);
+      logout({ redirectTo: '/marketplace?auth=login&reason=password-updated' });
     },
     onError: (error: any) => {
       setPasswordErrors(error.message || 'Failed to change password');
@@ -85,22 +71,11 @@ const Profile = () => {
   // Cancel subscription mutation
   const cancelSubscription = useMutation({
     mutationFn: async (subscriptionId: number) => {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('https://all.crispai.ca/api/subscription/cancel/', {
+      return apiRequest<{ detail: string }>('/subscription/cancel/', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        auth: true,
         body: JSON.stringify({ subscription_id: subscriptionId }),
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to cancel subscription');
-      }
-      
-      return response.json();
     },
     onSuccess: () => {
       toast.success('Subscription canceled successfully');
@@ -428,6 +403,12 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <Seo
+        title="Your Account"
+        description="Manage your CrispAI Marketplace subscriptions, account details, and security settings."
+        canonicalPath="/profile"
+        noindex
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Profile Header */}
         <div className="bg-white shadow rounded-lg mb-8">
