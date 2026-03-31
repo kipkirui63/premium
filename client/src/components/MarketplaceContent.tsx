@@ -129,7 +129,7 @@ const MarketplaceContent = () => {
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <SubscriptionWarning />
 
-          <div className="rounded-[2rem] border border-white/80 bg-white/65 p-4 shadow-[0_30px_80px_-50px_rgba(14,165,233,0.35)] backdrop-blur md:p-6">
+          <div className="rounded-[2.5rem] border border-white/80 bg-white/68 p-4 shadow-[0_40px_110px_-55px_rgba(15,23,42,0.22)] backdrop-blur-2xl md:p-6">
             <MarketplaceFilters
               activeTab={activeTab}
               tabs={tabs}

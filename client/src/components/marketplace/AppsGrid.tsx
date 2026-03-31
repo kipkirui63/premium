@@ -29,7 +29,7 @@ interface AppsGridProps {
 
 const AppsGrid = ({ apps, userRatings, onAddToCart, onRate }: AppsGridProps) => {
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-3">
       {apps.map((app) => (
         <AppCard
           key={app.id}

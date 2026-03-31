@@ -16,15 +16,7 @@ const MarketplaceHero = () => {
 
       <div className="relative mx-auto grid min-h-[680px] max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
         <div className="max-w-2xl">
-          <div className="inline-flex rounded-full border border-sky-100 bg-white/80 px-4 py-2 shadow-sm backdrop-blur">
-            <img
-              src="/lovable-uploads/4db0eac4-a39c-4fac-9775-eed8e9a4bebb.png"
-              alt="CrispAI"
-              className="h-7 w-auto"
-            />
-          </div>
-
-          <div className="mt-8 rounded-[2rem] border border-white/80 bg-white/70 p-8 shadow-[0_30px_80px_-45px_rgba(14,165,233,0.45)] backdrop-blur">
+          <div className="rounded-[2rem] border border-white/80 bg-white/70 p-8 shadow-[0_30px_80px_-45px_rgba(14,165,233,0.45)] backdrop-blur">
             <h1 className="text-4xl font-black leading-tight tracking-[-0.04em] text-slate-900 md:text-6xl">
               Find the Perfect<br />
               Digital Tools

@@ -20,7 +20,7 @@ const MarketplaceFilters = ({
   onSignInClick
 }: MarketplaceFiltersProps) => {
   return (
-    <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="mb-8 flex flex-col gap-5 rounded-[2rem] border border-slate-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.84))] p-4 shadow-[0_24px_60px_-48px_rgba(15,23,42,0.3)] lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-wrap gap-2">
         {tabs.map((tab) => (
           <button
@@ -28,8 +28,8 @@ const MarketplaceFilters = ({
             onClick={() => onTabChange(tab)}
             className={`rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
               activeTab === tab
-                ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/25'
-                : 'bg-sky-50 text-slate-600 hover:bg-sky-100 hover:text-sky-700'
+                ? 'bg-[linear-gradient(135deg,#0ea5e9_0%,#38bdf8_55%,#7dd3fc_100%)] text-white shadow-[0_16px_35px_-18px_rgba(14,165,233,0.6)]'
+                : 'bg-white text-slate-600 ring-1 ring-slate-200/80 hover:-translate-y-0.5 hover:bg-sky-50 hover:text-sky-700'
             }`}
           >
             {tab}
@@ -43,12 +43,12 @@ const MarketplaceFilters = ({
           <input
             type="text"
             placeholder="Search applications..."
-            className="w-full rounded-full border border-sky-100 bg-sky-50/80 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100"
+            className="w-full rounded-full border border-slate-200/80 bg-white py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
           />
         </div>
         <div className="flex items-center gap-3">
           <button 
-            className="relative flex h-12 w-12 items-center justify-center rounded-full border border-sky-100 bg-white text-slate-600 transition-colors hover:border-sky-200 hover:text-sky-600"
+            className="relative flex h-12 w-12 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-600"
             onClick={onCartClick}
           >
             <ShoppingCart className="w-5 h-5" />
@@ -60,7 +60,7 @@ const MarketplaceFilters = ({
           </button>
           <button 
             onClick={onSignInClick}
-            className="rounded-full border border-sky-100 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-sky-200 hover:text-sky-600"
+            className="rounded-full border border-slate-200/80 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
           >
             Sign In
           </button>

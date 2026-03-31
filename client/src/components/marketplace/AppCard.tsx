@@ -152,7 +152,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
               window.open(app.agentUrl, '_blank');
             }
           }}
-          className="flex w-full items-center justify-center space-x-2 rounded-full bg-sky-500 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-600"
+          className="flex w-full items-center justify-center space-x-2 rounded-full bg-[linear-gradient(135deg,#0ea5e9_0%,#38bdf8_55%,#7dd3fc_100%)] px-4 py-3 font-semibold text-white shadow-[0_18px_35px_-18px_rgba(14,165,233,0.65)] transition-all hover:-translate-y-0.5"
         >
           <ExternalLink className="w-4 h-4" />
           <span>View</span>
@@ -164,7 +164,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return (
         <button 
           onClick={() => onAddToCart(app, selectedPlan)}
-          className="flex w-full items-center justify-center space-x-2 rounded-full bg-sky-500 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-600"
+          className="flex w-full items-center justify-center space-x-2 rounded-full bg-[linear-gradient(135deg,#0ea5e9_0%,#38bdf8_55%,#7dd3fc_100%)] px-4 py-3 font-semibold text-white shadow-[0_18px_35px_-18px_rgba(14,165,233,0.65)] transition-all hover:-translate-y-0.5"
         >
           <ShoppingCart className="w-4 h-4" />
           <span>Add to Cart</span>
@@ -176,7 +176,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return (
         <button 
           onClick={handleAgentClick}
-          className="flex w-full items-center justify-center space-x-2 rounded-full bg-emerald-500 px-4 py-3 font-medium text-white transition-colors hover:bg-emerald-600"
+          className="flex w-full items-center justify-center space-x-2 rounded-full bg-[linear-gradient(135deg,#047857_0%,#10b981_100%)] px-4 py-3 font-semibold text-white shadow-[0_18px_35px_-18px_rgba(16,185,129,0.7)] transition-all hover:-translate-y-0.5"
         >
           <ExternalLink className="w-4 h-4" />
           <span>Access App</span>
@@ -187,7 +187,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     return (
       <button 
         onClick={() => onAddToCart(app, selectedPlan)}
-        className="flex w-full items-center justify-center space-x-2 rounded-full bg-sky-500 px-4 py-3 font-medium text-white transition-colors hover:bg-sky-600"
+        className="flex w-full items-center justify-center space-x-2 rounded-full bg-[linear-gradient(135deg,#0ea5e9_0%,#38bdf8_55%,#7dd3fc_100%)] px-4 py-3 font-semibold text-white shadow-[0_18px_35px_-18px_rgba(14,165,233,0.65)] transition-all hover:-translate-y-0.5"
       >
         <ShoppingCart className="w-4 h-4" />
         <span>Purchase</span>
@@ -198,18 +198,20 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
 
   return (
-    <div className="group overflow-hidden rounded-[2rem] border border-sky-100 bg-white shadow-[0_24px_70px_-45px_rgba(14,165,233,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_80px_-40px_rgba(14,165,233,0.45)]">
+    <div className="group relative overflow-hidden rounded-[2.2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_28px_80px_-50px_rgba(15,23,42,0.38)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_48px_120px_-56px_rgba(8,145,178,0.45)]">
+      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-sky-300 to-transparent opacity-70" />
       <div className={`relative flex h-64 items-center justify-center overflow-hidden ${app.backgroundGradient}`}>
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(15,23,42,0.18))]" />
-        <div className={`absolute top-4 right-4 ${app.badgeColor} z-10 rounded-full px-3 py-1 text-xs font-bold text-white`}>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(15,23,42,0.28))]" />
+        <div className={`absolute top-4 right-4 ${app.badgeColor} z-10 rounded-full px-3 py-1 text-xs font-bold text-white shadow-lg`}>
           {app.badge}
         </div>
         {user && hasAccessToApp && !app.isComingSoon && (
-          <div className="absolute left-4 top-4 z-10 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white">
+          <div className="absolute left-4 top-4 z-10 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
             Owned
           </div>
         )}
-        <img src={app.icon} alt={app.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_40%)]" />
+        <img src={app.icon} alt={app.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
       </div>
       
       <div className="p-6">
@@ -217,8 +219,8 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
           <h3 
             className={`text-xl font-bold transition-colors ${
               app.agentUrl && !app.isComingSoon && (hasAccessToApp || app.actionType === 'view')
-                ? 'flex cursor-pointer items-center gap-1 text-slate-900 hover:text-sky-600' 
-                : 'text-slate-900'
+                ? 'flex cursor-pointer items-center gap-1 text-sky-900 hover:text-sky-700' 
+                : 'text-sky-950'
             }`}
             onClick={
               app.agentUrl && !app.isComingSoon && (hasAccessToApp || app.actionType === 'view')
@@ -233,24 +235,24 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
               <ExternalLink className="w-4 h-4" />
             )}
           </h3>
-          <div className="rounded-2xl bg-sky-50 px-4 py-3 text-right">
-            <div className="text-2xl font-bold text-sky-600">{priceText}</div>
+          <div className="rounded-[1.4rem] border border-sky-100 bg-[linear-gradient(180deg,#ffffff_0%,#f0f9ff_100%)] px-4 py-3 text-right shadow-[0_16px_30px_-24px_rgba(14,165,233,0.55)]">
+            <div className="text-2xl font-extrabold text-sky-950">{priceText}</div>
             {selectedPlan === 'yearly' && saveAmount > 0 && (
-              <div className="text-xs text-green-600 font-medium">
+              <div className="text-xs font-semibold text-emerald-600">
                 Save {savePercentage}% (${saveAmount.toFixed(0)})
               </div>
             )}
-            <div className="text-sm text-green-600">{app.freeTrialDays}</div>
+            <div className="text-sm font-medium text-sky-600">{app.freeTrialDays}</div>
           </div>
         </div>
         
         <div className="mb-4">
-          <div className="flex rounded-full bg-sky-50 p-1">
+          <div className="flex rounded-full border border-slate-200/80 bg-slate-50/90 p-1">
             <button
               onClick={() => setSelectedPlan('monthly')}
               className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
                 selectedPlan === 'monthly'
-                  ? 'bg-white text-sky-600 shadow-sm'
+                  ? 'bg-white text-sky-900 shadow-sm'
                   : 'text-slate-600 hover:text-slate-800'
               }`}
             >
@@ -260,7 +262,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
               onClick={() => setSelectedPlan('yearly')}
               className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
                 selectedPlan === 'yearly'
-                  ? 'bg-white text-sky-600 shadow-sm'
+                  ? 'bg-white text-sky-900 shadow-sm'
                   : 'text-slate-600 hover:text-slate-800'
               }`}
             >
