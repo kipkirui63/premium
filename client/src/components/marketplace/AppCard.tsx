@@ -201,7 +201,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     <div className="group relative overflow-hidden rounded-[2.2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_28px_80px_-50px_rgba(15,23,42,0.38)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_48px_120px_-56px_rgba(8,145,178,0.45)]">
       <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-sky-300 to-transparent opacity-70" />
       <div className={`relative flex h-64 items-center justify-center overflow-hidden ${app.backgroundGradient}`}>
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(15,23,42,0.28))]" />
         <div className={`absolute top-4 right-4 ${app.badgeColor} z-10 rounded-full px-3 py-1 text-xs font-bold text-white shadow-lg`}>
           {app.badge}
         </div>
@@ -210,7 +209,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
             Owned
           </div>
         )}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_40%)]" />
         <img src={app.icon} alt={app.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
       </div>
       
