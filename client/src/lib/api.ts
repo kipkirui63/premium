@@ -1,5 +1,21 @@
 const AUTH_EXPIRED_EVENT = "auth:expired";
 
+const normalizeApiBaseUrl = (rawUrl: string) => {
+  const sanitized = rawUrl.replace(/\/$/, "");
+
+  try {
+    const parsed = new URL(sanitized);
+    if (!parsed.pathname || parsed.pathname === "/") {
+      parsed.pathname = "/api";
+      return parsed.toString().replace(/\/$/, "");
+    }
+  } catch {
+    // Fall back to the raw value if parsing fails.
+  }
+
+  return sanitized;
+};
+
 export class ApiError extends Error {
   status: number;
   data: unknown;
@@ -19,7 +35,7 @@ type ApiRequestOptions = RequestInit & {
 
 const getDefaultApiBaseUrl = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
+    return normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
   }
 
   if (typeof window !== "undefined") {

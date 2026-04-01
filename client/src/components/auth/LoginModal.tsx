@@ -39,6 +39,7 @@ const LoginModal = ({
   const [turnstileToken, setTurnstileToken] = useState('');
   const [turnstileNonce, setTurnstileNonce] = useState(0);
   const [turnstileSiteKey, setTurnstileSiteKey] = useState(import.meta.env.VITE_TURNSTILE_SITE_KEY || '');
+  const [turnstileConfigChecked, setTurnstileConfigChecked] = useState(Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY));
   const { login, forgotPassword, register, resetPassword, isLoading } = useAuth();
   const { toast } = useToast();
   const isRegister = mode === 'register';
@@ -46,6 +47,7 @@ const LoginModal = ({
   const isResetPassword = mode === 'reset-password';
   const requiresPassword = mode === 'login' || mode === 'register' || mode === 'reset-password';
   const requiresTurnstile = mode !== 'reset-password';
+  const shouldShowTurnstileWarning = requiresTurnstile && turnstileConfigChecked && !turnstileSiteKey;
 
   useEffect(() => {
     setMode(initialMode);
@@ -72,12 +74,14 @@ const LoginModal = ({
           return;
         }
         setTurnstileSiteKey(data.turnstile_site_key || '');
+        setTurnstileConfigChecked(true);
       })
       .catch(() => {
         if (!active) {
           return;
         }
         setTurnstileSiteKey('');
+        setTurnstileConfigChecked(true);
       });
 
     return () => {
@@ -372,6 +376,13 @@ const LoginModal = ({
               <p className="text-xs text-gray-500">
                 Complete the challenge to protect sign-in and registration from abuse.
               </p>
+            </div>
+          )}
+
+          {shouldShowTurnstileWarning && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Cloudflare Turnstile is not configured. Set `TURNSTILE_SITE_KEY` on the backend or
+              `VITE_TURNSTILE_SITE_KEY` on the frontend, then restart the server.
             </div>
           )}
 
