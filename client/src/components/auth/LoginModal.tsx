@@ -40,7 +40,7 @@ const LoginModal = ({
   const [turnstileNonce, setTurnstileNonce] = useState(0);
   const [turnstileSiteKey, setTurnstileSiteKey] = useState(import.meta.env.VITE_TURNSTILE_SITE_KEY || '');
   const [turnstileConfigChecked, setTurnstileConfigChecked] = useState(Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY));
-  const { login, forgotPassword, register, resetPassword, isLoading } = useAuth();
+  const { login, forgotPassword, register, resetPassword, isLoading, error } = useAuth();
   const { toast } = useToast();
   const isRegister = mode === 'register';
   const isForgotPassword = mode === 'forgot-password';
@@ -279,6 +279,12 @@ const LoginModal = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+              {error}
+            </div>
+          )}
+
           {isRegister && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
