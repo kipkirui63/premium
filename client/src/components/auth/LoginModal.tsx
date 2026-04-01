@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -7,14 +7,26 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import TurnstileWidget from './TurnstileWidget';
 
+type AuthMode = 'login' | 'register' | 'forgot-password' | 'reset-password';
+
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialMode?: AuthMode;
+  resetUid?: string;
+  resetToken?: string;
 }
 
-const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
-  const [isRegister, setIsRegister] = useState(false);
+const LoginModal = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  initialMode = 'login',
+  resetUid = '',
+  resetToken = '',
+}: LoginModalProps) => {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,21 +37,43 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
   const [turnstileNonce, setTurnstileNonce] = useState(0);
-  const { login, register, isLoading } = useAuth();
+  const { login, forgotPassword, register, resetPassword, isLoading } = useAuth();
   const { toast } = useToast();
   const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+  const isRegister = mode === 'register';
+  const isForgotPassword = mode === 'forgot-password';
+  const isResetPassword = mode === 'reset-password';
+  const requiresPassword = mode === 'login' || mode === 'register' || mode === 'reset-password';
+  const requiresTurnstile = mode !== 'reset-password';
+
+  useEffect(() => {
+    setMode(initialMode);
+    setPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setTurnstileToken('');
+    setTurnstileNonce((current) => current + 1);
+  }, [initialMode, isOpen]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    console.log('Form submitted:', { isRegister, email, password: '***', firstName, lastName, phone });
-    
-    if (!email || !password) {
+
+    if ((mode === 'login' || mode === 'register' || mode === 'forgot-password') && !email) {
       toast({
         title: "Validation Error",
-        description: "Please fill in both email and password.",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (requiresPassword && !password) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your password.",
         variant: "destructive",
       });
       return;
@@ -74,7 +108,36 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
       }
     }
 
-    if (turnstileSiteKey && !turnstileToken) {
+    if (isResetPassword) {
+      if (!resetUid || !resetToken) {
+        toast({
+          title: "Invalid Reset Link",
+          description: "This password reset link is incomplete or invalid.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        toast({
+          title: "Validation Error",
+          description: "Passwords do not match.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (password.length < 8) {
+        toast({
+          title: "Validation Error",
+          description: "Password must be at least 8 characters long.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    if (turnstileSiteKey && requiresTurnstile && !turnstileToken) {
       toast({
         title: "Security Check Required",
         description: "Please complete the security challenge before continuing.",
@@ -85,7 +148,6 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
 
     try {
       if (isRegister) {
-        console.log('Attempting registration...');
         await register(firstName, lastName, email, phone, password, confirmPassword, turnstileToken);
         toast({
           title: "Registration Successful",
@@ -103,16 +165,33 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         setShowConfirmPassword(false);
         setTurnstileToken('');
         setTurnstileNonce((current) => current + 1);
-        setIsRegister(false);
+        setMode('login');
+      } else if (isForgotPassword) {
+        const message = await forgotPassword(email, turnstileToken);
+        toast({
+          title: "Check Your Email",
+          description: message,
+        });
+        setTurnstileToken('');
+        setTurnstileNonce((current) => current + 1);
+        setMode('login');
       } else {
-        console.log('Attempting login...');
+        if (isResetPassword) {
+          const message = await resetPassword(resetUid, resetToken, password, confirmPassword);
+          toast({
+            title: "Password Updated",
+            description: message,
+          });
+          window.location.assign('/marketplace?auth=login&reason=password-updated');
+          return;
+        }
+
         await login(email, password, turnstileToken);
         toast({
-          title: "Login Successful", 
+          title: "Login Successful",
           description: "Welcome back!",
         });
-        
-        // Clear form and close modal
+
         setEmail('');
         setPassword('');
         setConfirmPassword('');
@@ -127,9 +206,10 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         onSuccess?.();
       }
     } catch (error) {
-      console.error('Auth error in modal:', error);
       setTurnstileToken('');
-      setTurnstileNonce((current) => current + 1);
+      if (requiresTurnstile) {
+        setTurnstileNonce((current) => current + 1);
+      }
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
@@ -145,10 +225,16 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              {isRegister ? 'Create Account' : 'Welcome Back'}
+              {mode === 'register' && 'Create Account'}
+              {mode === 'login' && 'Welcome Back'}
+              {mode === 'forgot-password' && 'Forgot Password'}
+              {mode === 'reset-password' && 'Set New Password'}
             </h2>
             <p className="text-gray-600 text-sm mt-1">
-              {isRegister ? 'Join CrispAI Marketplace today' : 'Sign in to your account'}
+              {mode === 'register' && 'Join CrispAI Marketplace today'}
+              {mode === 'login' && 'Sign in to your account'}
+              {mode === 'forgot-password' && 'Enter your email to receive a reset link'}
+              {mode === 'reset-password' && 'Choose a new password for your account'}
             </p>
           </div>
           <button 
@@ -202,24 +288,26 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email Address <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="john@example.com"
-                required
-                disabled={isLoading}
-              />
+          {!isResetPassword && (
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Email Address <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="john@example.com"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {isRegister && (
             <div className="space-y-2">
@@ -242,7 +330,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
             </div>
           )}
 
-          {turnstileSiteKey && (
+          {turnstileSiteKey && requiresTurnstile && (
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">Security Verification</Label>
               <div key={turnstileNonce}>
@@ -257,44 +345,46 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
               </p>
             </div>
           )}
-          
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="••••••••"
-                required
-                disabled={isLoading}
-                minLength={8}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                disabled={isLoading}
-                tabIndex={-1}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          </div>
 
-          {isRegister && (
+          {requiresPassword && (
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                {isResetPassword ? 'New Password' : 'Password'} <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="••••••••"
+                  required
+                  disabled={isLoading}
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  disabled={isLoading}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {(isRegister || isResetPassword) && (
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                Repeat Password <span className="text-red-500">*</span>
+                Confirm Password <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -307,7 +397,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
                   placeholder="••••••••"
                   required
                   disabled={isLoading}
-                  minLength={6}
+                  minLength={8}
                 />
                 <button
                   type="button"
@@ -337,22 +427,70 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
                 <span>Processing...</span>
               </div>
             ) : (
-              isRegister ? 'Create Account' : 'Sign In'
+              <>
+                {mode === 'register' && 'Create Account'}
+                {mode === 'login' && 'Sign In'}
+                {mode === 'forgot-password' && 'Send Reset Link'}
+                {mode === 'reset-password' && 'Update Password'}
+              </>
             )}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
-          <button
-            onClick={() => setIsRegister(!isRegister)}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
-            disabled={isLoading}
-          >
-            {isRegister 
-              ? 'Already have an account? Sign in' 
-              : "Don't have an account? Create one"
-            }
-          </button>
+          {mode === 'login' && (
+            <div className="space-y-3">
+              <button
+                onClick={() => setMode('forgot-password')}
+                className="text-sm text-slate-600 hover:text-blue-700 transition-colors"
+                disabled={isLoading}
+                type="button"
+              >
+                Forgot your password?
+              </button>
+              <button
+                onClick={() => setMode('register')}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                disabled={isLoading}
+                type="button"
+              >
+                Don't have an account? Create one
+              </button>
+            </div>
+          )}
+
+          {mode === 'register' && (
+            <button
+              onClick={() => setMode('login')}
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              disabled={isLoading}
+              type="button"
+            >
+              Already have an account? Sign in
+            </button>
+          )}
+
+          {mode === 'forgot-password' && (
+            <button
+              onClick={() => setMode('login')}
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              disabled={isLoading}
+              type="button"
+            >
+              Back to sign in
+            </button>
+          )}
+
+          {mode === 'reset-password' && (
+            <button
+              onClick={() => window.location.assign('/marketplace?auth=login')}
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              disabled={isLoading}
+              type="button"
+            >
+              Back to sign in
+            </button>
+          )}
         </div>
 
         {isRegister && (

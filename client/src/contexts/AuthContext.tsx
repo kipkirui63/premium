@@ -23,6 +23,13 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string, turnstileToken?: string) => Promise<void>;
+  forgotPassword: (email: string, turnstileToken?: string) => Promise<string>;
+  resetPassword: (
+    uid: string,
+    token: string,
+    newPassword: string,
+    repeatPassword: string,
+  ) => Promise<string>;
   register: (
     firstName: string,
     lastName: string,
@@ -132,6 +139,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const forgotPassword = async (email: string, turnstileToken?: string): Promise<string> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await apiRequest<{ detail?: string }>('/auth/forgot-password/', {
+        method: 'POST',
+        body: JSON.stringify({ email, turnstile_token: turnstileToken }),
+      });
+
+      return data.detail || 'If an account with that email exists, a password reset link has been sent.';
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      setError(error instanceof Error ? error.message : 'Password reset request failed');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetPassword = async (
+    uid: string,
+    token: string,
+    newPassword: string,
+    repeatPassword: string,
+  ): Promise<string> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await apiRequest<{ detail?: string }>('/auth/reset-password/', {
+        method: 'POST',
+        body: JSON.stringify({
+          uid,
+          token,
+          new_password: newPassword,
+          repeat_password: repeatPassword,
+        }),
+      });
+
+      return data.detail || 'Password reset successfully. Please sign in with your new password.';
+    } catch (error) {
+      console.error('Reset password error:', error);
+      setError(error instanceof Error ? error.message : 'Password reset failed');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const register = async (
     firstName: string,
     lastName: string,
@@ -212,6 +267,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         login,
+        forgotPassword,
+        resetPassword,
         register,
         logout,
         isLoading,

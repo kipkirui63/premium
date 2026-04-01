@@ -12,11 +12,16 @@ interface App extends Tool {
   selectedPlan?: 'monthly' | 'yearly';
 }
 
+type ModalAuthMode = 'login' | 'register' | 'forgot-password' | 'reset-password';
+
 const MarketplaceContent = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [cartItems, setCartItems] = useState<App[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<ModalAuthMode>('login');
+  const [resetUid, setResetUid] = useState('');
+  const [resetToken, setResetToken] = useState('');
 
   const [userRatings, setUserRatings] = useState<{ [key: number]: number }>({});
 
@@ -41,7 +46,17 @@ const MarketplaceContent = () => {
       },
     };
 
-    if (authMode === 'login') {
+    if (authMode === 'login' || authMode === 'forgot-password') {
+      setAuthModalMode(authMode);
+      setResetUid('');
+      setResetToken('');
+      setIsLoginModalOpen(true);
+    }
+
+    if (authMode === 'reset-password') {
+      setAuthModalMode('reset-password');
+      setResetUid(params.get('uid') || '');
+      setResetToken(params.get('token') || '');
       setIsLoginModalOpen(true);
     }
 
@@ -84,6 +99,7 @@ const MarketplaceContent = () => {
  const addToCart = (item: App, planType?: 'monthly' | 'yearly') => {
   // Check if user is logged in
   if (!user) {
+    setAuthModalMode('login');
     setIsLoginModalOpen(true);
     toast.info('Please log in to add items to your cart');
     return;
@@ -136,7 +152,10 @@ const MarketplaceContent = () => {
               cartItemCount={cartItems.length}
               onTabChange={setActiveTab}
               onCartClick={() => setIsCartOpen(true)}
-              onSignInClick={() => setIsLoginModalOpen(true)}
+              onSignInClick={() => {
+                setAuthModalMode('login');
+                setIsLoginModalOpen(true);
+              }}
             />
 
             <AppsGrid
@@ -155,17 +174,25 @@ const MarketplaceContent = () => {
         cartItems={cartItems}
         onRemoveItem={removeFromCart}
         onClearCart={clearCart}
-        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onOpenLoginModal={() => {
+          setAuthModalMode('login');
+          setIsLoginModalOpen(true);
+        }}
       />
 
       <LoginModal
         isOpen={isLoginModalOpen}
+        initialMode={authModalMode}
+        resetUid={resetUid}
+        resetToken={resetToken}
         onClose={() => {
           setIsLoginModalOpen(false);
           const params = new URLSearchParams(window.location.search);
-          if (params.get('auth') === 'login') {
+          if (['login', 'forgot-password', 'reset-password'].includes(params.get('auth') || '')) {
             params.delete('auth');
             params.delete('reason');
+            params.delete('uid');
+            params.delete('token');
             const nextQuery = params.toString();
             window.history.replaceState(
               {},
