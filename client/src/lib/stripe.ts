@@ -1,9 +1,10 @@
 import { loadStripe } from '@stripe/stripe-js';
-const API_BASE_URL = 'https://all.crispai.ca/api';
+import { getApiUrl } from './api';
+
 // Fetch Stripe publishable key from backend
 const fetchStripeConfig = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/stripe/config/`);
+    const response = await fetch(getApiUrl('/stripe/config/'));
     if (!response.ok) {
       throw new Error('Failed to fetch Stripe config');
     }

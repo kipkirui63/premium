@@ -46,11 +46,30 @@ interface AuthContextType {
   checkTokenExpiry: () => boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const defaultAuthContext: AuthContextType = {
+  user: null,
+  login: async () => {
+    throw new Error('AuthProvider is not ready yet. Please refresh and try again.');
+  },
+  forgotPassword: async () => {
+    throw new Error('AuthProvider is not ready yet. Please refresh and try again.');
+  },
+  resetPassword: async () => {
+    throw new Error('AuthProvider is not ready yet. Please refresh and try again.');
+  },
+  register: async () => {
+    throw new Error('AuthProvider is not ready yet. Please refresh and try again.');
+  },
+  logout: () => {},
+  isLoading: false,
+  error: null,
+  verifyEmail: async () => false,
+  checkTokenExpiry: () => false,
+};
+
+const AuthContext = createContext<AuthContextType>(defaultAuthContext);
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
+  return useContext(AuthContext);
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

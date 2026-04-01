@@ -8,6 +8,14 @@ app.use(express.urlencoded({ extended: false }));
 app.disable("x-powered-by");
 
 app.use((_req, res, next) => {
+  const localApiOrigin = "http://localhost:8000";
+  const localApiOriginAlt = "http://127.0.0.1:8000";
+  const connectSrc = [
+    "'self'",
+    "https:",
+    ...(app.get("env") === "development" ? [localApiOrigin, localApiOriginAlt] : []),
+  ].join(" ");
+
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -21,7 +29,7 @@ app.use((_req, res, next) => {
       "img-src 'self' data: https:",
       "style-src 'self' 'unsafe-inline'",
       "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
-      "connect-src 'self' https:",
+      `connect-src ${connectSrc}`,
       "frame-src https://challenges.cloudflare.com",
       "font-src 'self' data: https:",
       "base-uri 'self'",

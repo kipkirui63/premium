@@ -1,4 +1,3 @@
-const DEFAULT_API_BASE_URL = "https://all.crispai.ca/api";
 const AUTH_EXPIRED_EVENT = "auth:expired";
 
 export class ApiError extends Error {
@@ -18,8 +17,28 @@ type ApiRequestOptions = RequestInit & {
   suppressAuthRedirect?: boolean;
 };
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || DEFAULT_API_BASE_URL;
+const getDefaultApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    const { protocol, hostname, port, origin } = window.location;
+    const isLocalHost = hostname === "127.0.0.1" || hostname === "localhost";
+
+    // In local development the frontend commonly runs on :5000 or :5173
+    // while the Django API runs on :8000.
+    if (isLocalHost && port && port !== "8000") {
+      return `${protocol}//${hostname}:8000/api`;
+    }
+
+    return `${origin}/api`;
+  }
+
+  return "/api";
+};
+
+export const API_BASE_URL = getDefaultApiBaseUrl();
 
 export const getApiUrl = (path: string) =>
   path.startsWith("http") ? path : `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;

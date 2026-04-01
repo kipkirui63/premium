@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { apiRequest } from '@/lib/api';
 import TurnstileWidget from './TurnstileWidget';
 
 type AuthMode = 'login' | 'register' | 'forgot-password' | 'reset-password';
@@ -37,9 +38,9 @@ const LoginModal = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
   const [turnstileNonce, setTurnstileNonce] = useState(0);
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState(import.meta.env.VITE_TURNSTILE_SITE_KEY || '');
   const { login, forgotPassword, register, resetPassword, isLoading } = useAuth();
   const { toast } = useToast();
-  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
   const isRegister = mode === 'register';
   const isForgotPassword = mode === 'forgot-password';
   const isResetPassword = mode === 'reset-password';
@@ -55,6 +56,34 @@ const LoginModal = ({
     setTurnstileToken('');
     setTurnstileNonce((current) => current + 1);
   }, [initialMode, isOpen]);
+
+  useEffect(() => {
+    if (import.meta.env.VITE_TURNSTILE_SITE_KEY) {
+      return;
+    }
+
+    let active = true;
+
+    apiRequest<{ turnstile_site_key?: string }>('/auth/config/', {
+      suppressAuthRedirect: true,
+    })
+      .then((data) => {
+        if (!active) {
+          return;
+        }
+        setTurnstileSiteKey(data.turnstile_site_key || '');
+      })
+      .catch(() => {
+        if (!active) {
+          return;
+        }
+        setTurnstileSiteKey('');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (!isOpen) return null;
 
