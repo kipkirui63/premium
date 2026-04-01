@@ -4,7 +4,7 @@ import { X, ShoppingCart, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '../lib/api';
+import { ApiError, apiRequest } from '../lib/api';
 
 interface App {
   id: number;
@@ -87,7 +87,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
         method: 'POST',
         auth: true,
         body: JSON.stringify({
-          tool_id: item.id, 
+          tool_id: item.name,
           plan_type: planType
         }),
       });
@@ -105,7 +105,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart, on
       console.error('Checkout error:', error);
       toast({
         title: "Checkout Failed",
-        description: "An error occurred during checkout. Please try again.",
+        description: error instanceof ApiError ? error.message : "An error occurred during checkout. Please try again.",
         variant: "destructive",
       });
     } finally {
