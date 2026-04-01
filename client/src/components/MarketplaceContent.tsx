@@ -6,6 +6,7 @@ import LoginModal from './auth/LoginModal';
 import SubscriptionWarning from './SubscriptionWarning';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { apiRequest } from '../lib/api';
 import { TOOLS, Tool } from '../data/tools';
 
 interface App extends Tool {
@@ -16,13 +17,13 @@ type ModalAuthMode = 'login' | 'register' | 'forgot-password' | 'reset-password'
 
 const MarketplaceContent = () => {
   const [activeTab, setActiveTab] = useState('All');
+  const [allApps, setAllApps] = useState<App[]>(TOOLS);
   const [cartItems, setCartItems] = useState<App[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<ModalAuthMode>('login');
   const [resetUid, setResetUid] = useState('');
   const [resetToken, setResetToken] = useState('');
-
   const [userRatings, setUserRatings] = useState<{ [key: number]: number }>({});
 
   const { user } = useAuth();
@@ -79,10 +80,74 @@ const MarketplaceContent = () => {
     }
   }, []);
 
-  const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
+  useEffect(() => {
+    let active = true;
 
-  // Use static tools data from the data file
-  const allApps: App[] = TOOLS;
+    const loadTools = async () => {
+      try {
+        const data = await apiRequest<Array<{
+          id: number;
+          name: string;
+          description: string;
+          monthly_price: string | number;
+          yearly_price: string | number;
+          free_trial_days: number;
+          rating: string | number;
+          review_count: number;
+          badge: string;
+          badge_color: string;
+          icon: string;
+          background_gradient: string;
+          agent_url?: string;
+          is_coming_soon?: boolean;
+        }>>('/tools/', {
+          suppressAuthRedirect: true,
+        });
+
+        if (!active) {
+          return;
+        }
+
+        if (!Array.isArray(data) || data.length === 0) {
+          setAllApps(TOOLS);
+          return;
+        }
+
+        setAllApps(
+          data.map((tool) => ({
+            id: tool.id,
+            name: tool.name,
+            description: tool.description,
+            monthlyPrice: Number(tool.monthly_price),
+            yearlyPrice: Number(tool.yearly_price),
+            freeTrialDays: `${tool.free_trial_days}-day free trial`,
+            rating: Number(tool.rating),
+            reviewCount: tool.review_count,
+            badge: tool.badge,
+            badgeColor: tool.badge_color,
+            icon: tool.icon,
+            backgroundGradient: tool.background_gradient,
+            agentUrl: tool.agent_url,
+            isComingSoon: Boolean(tool.is_coming_soon),
+            actionType: TOOLS.find((item) => item.name === tool.name)?.actionType,
+          })),
+        );
+      } catch {
+        if (!active) {
+          return;
+        }
+        setAllApps(TOOLS);
+      }
+    };
+
+    loadTools();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
 
   const filteredApps = activeTab === 'All' 
     ? allApps 
