@@ -58,6 +58,16 @@ const loadTurnstileScript = () =>
 const TurnstileWidget = ({ siteKey, onVerify, onExpire }: TurnstileWidgetProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const onVerifyRef = useRef(onVerify);
+  const onExpireRef = useRef(onExpire);
+
+  useEffect(() => {
+    onVerifyRef.current = onVerify;
+  }, [onVerify]);
+
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,14 +80,14 @@ const TurnstileWidget = ({ siteKey, onVerify, onExpire }: TurnstileWidgetProps) 
 
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
-          callback: onVerify,
-          "expired-callback": onExpire,
-          "error-callback": onExpire,
+          callback: (token: string) => onVerifyRef.current(token),
+          "expired-callback": () => onExpireRef.current(),
+          "error-callback": () => onExpireRef.current(),
           theme: "light",
         });
       })
       .catch(() => {
-        onExpire();
+        onExpireRef.current();
       });
 
     return () => {
@@ -86,7 +96,7 @@ const TurnstileWidget = ({ siteKey, onVerify, onExpire }: TurnstileWidgetProps) 
         window.turnstile.remove(widgetIdRef.current);
       }
     };
-  }, [siteKey, onVerify, onExpire]);
+  }, [siteKey]);
 
   return <div ref={containerRef} className="overflow-hidden rounded-xl border border-slate-200" />;
 };

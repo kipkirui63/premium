@@ -254,8 +254,8 @@ const LoginModal = ({
   return (
     <>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md z-50 border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
+      <div className="fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-gray-100 bg-white p-8 shadow-2xl">
+        <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
               {mode === 'register' && 'Create Account'}
@@ -363,29 +363,6 @@ const LoginModal = ({
             </div>
           )}
 
-          {turnstileSiteKey && requiresTurnstile && (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Security Verification</Label>
-              <div key={turnstileNonce}>
-                <TurnstileWidget
-                  siteKey={turnstileSiteKey}
-                  onVerify={(token) => setTurnstileToken(token)}
-                  onExpire={() => setTurnstileToken('')}
-                />
-              </div>
-              <p className="text-xs text-gray-500">
-                Complete the challenge to protect sign-in and registration from abuse.
-              </p>
-            </div>
-          )}
-
-          {shouldShowTurnstileWarning && (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Cloudflare Turnstile is not configured. Set `TURNSTILE_SITE_KEY` on the backend or
-              `VITE_TURNSTILE_SITE_KEY` on the frontend, then restart the server.
-            </div>
-          )}
-
           {requiresPassword && (
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium text-gray-700">
@@ -456,6 +433,29 @@ const LoginModal = ({
             </div>
           )}
 
+          {turnstileSiteKey && requiresTurnstile && (
+            <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <Label className="text-sm font-medium text-gray-700">Security Verification</Label>
+              <div key={turnstileNonce} className="overflow-hidden rounded-xl bg-white">
+                <TurnstileWidget
+                  siteKey={turnstileSiteKey}
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken('')}
+                />
+              </div>
+              <p className="text-xs text-gray-500">
+                Complete the challenge before submitting the form.
+              </p>
+            </div>
+          )}
+
+          {shouldShowTurnstileWarning && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+              Cloudflare Turnstile is not configured. Set `TURNSTILE_SITE_KEY` on the backend or
+              `VITE_TURNSTILE_SITE_KEY` on the frontend, then restart the server.
+            </div>
+          )}
+
           <Button
             type="submit"
             disabled={isLoading}
@@ -477,12 +477,12 @@ const LoginModal = ({
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 border-t border-slate-100 pt-5 text-center">
           {mode === 'login' && (
-            <div className="space-y-3">
+            <div className="flex flex-col items-center gap-3">
               <button
                 onClick={() => setMode('forgot-password')}
-                className="text-sm text-slate-600 hover:text-blue-700 transition-colors"
+                className="block text-sm text-slate-600 transition-colors hover:text-blue-700"
                 disabled={isLoading}
                 type="button"
               >
@@ -490,7 +490,7 @@ const LoginModal = ({
               </button>
               <button
                 onClick={() => setMode('register')}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                className="block text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
                 disabled={isLoading}
                 type="button"
               >
@@ -502,7 +502,7 @@ const LoginModal = ({
           {mode === 'register' && (
             <button
               onClick={() => setMode('login')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              className="block w-full text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
               disabled={isLoading}
               type="button"
             >
@@ -513,7 +513,7 @@ const LoginModal = ({
           {mode === 'forgot-password' && (
             <button
               onClick={() => setMode('login')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              className="block w-full text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
               disabled={isLoading}
               type="button"
             >
@@ -524,7 +524,7 @@ const LoginModal = ({
           {mode === 'reset-password' && (
             <button
               onClick={() => window.location.assign('/marketplace?auth=login')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+              className="block w-full text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
               disabled={isLoading}
               type="button"
             >
